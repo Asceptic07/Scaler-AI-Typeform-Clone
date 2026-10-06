@@ -1,0 +1,37 @@
+# =========================
+# Frontend / Next.js
+# =========================
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# =========================
+# Backend / Python
+# =========================
+backend/.venv/
+backend/__pycache__/
+backend/**/*.py[cod]
+backend/.pytest_cache/
+backend/.ruff_cache/
+backend/.mypy_cache/
+
+# Environment files
+backend/.env
+
+# SQLite runtime files
+backend/*.db-shm
+backend/*.db-wal
+backend/*.db-journal
+
+# =========================
+# General
+# =========================
+.DS_Store
+Thumbs.db
+*.log
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
