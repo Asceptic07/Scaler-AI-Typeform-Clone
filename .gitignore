@@ -20,11 +20,19 @@ backend/.mypy_cache/
 
 # Environment files
 backend/.env
+.env
+__pycache__/
+.pytest_cache/
+.ruff_cache/
 
 # SQLite runtime files
 backend/*.db-shm
 backend/*.db-wal
 backend/*.db-journal
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
 
 # =========================
 # General
