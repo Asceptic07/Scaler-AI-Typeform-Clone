@@ -1,7 +1,7 @@
 # Typeform Clone — current development setup
 
-Phase 6 adds the public, one-question-at-a-time respondent experience to the
-existing dashboard, builder, and backend. Results pages come in a later phase.
+Phase 7 adds creator-facing response lists, individual answers, and question
+summaries to the existing dashboard, builder, and public respondent experience.
 
 Run these commands in separate terminals from the repository root.
 
@@ -42,6 +42,12 @@ Frontend routes:
 - `/to/[slug]`: published public form, accessible without login. Answers remain
   local while navigating, then submit together to the real backend. Successful
   persistence displays the thank-you screen.
+- `/forms/[formId]/results`: responses newest first, local submission times,
+  and a Summary tab with answered counts and choice, dropdown, yes/no, and rating
+  distributions. Refresh retrieves current results; there is no polling.
+- `/forms/[formId]/results/[responseId]`: all questions and submitted answers in
+  form order, including unanswered optional questions. Results are linked from
+  the builder navigation and dashboard response counts/context menus.
 
 Frontend features live in `src/features/forms/` and `src/features/builder/`.
 Small shared controls/dialogs live in `src/components/ui/`, domain types in

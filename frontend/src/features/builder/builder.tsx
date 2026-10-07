@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { arrayMove } from "@dnd-kit/sortable";
 import {
   ArrowLeft,
+  BarChart3,
   Check,
   ChevronDown,
   Copy,
@@ -387,6 +388,17 @@ export function Builder({ formId }: { formId: number }) {
           <FileText size={15} />
           Content
         </span>
+        <Link
+          className="builder-nav-link"
+          href={`/forms/${form.id}/results`}
+          onClick={async (event) => {
+            event.preventDefault();
+            if (await saveCurrent()) router.push(`/forms/${form.id}/results`);
+          }}
+        >
+          <BarChart3 size={15} />
+          Results
+        </Link>
         <span className="builder-subnav-hint">
           Build a conversation, one question at a time.
         </span>

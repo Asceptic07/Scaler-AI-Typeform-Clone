@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
+  BarChart3,
   ChevronDown,
   Copy,
   FileText,
@@ -110,6 +111,11 @@ export function Dashboard() {
       label: "Open form",
       icon: <ArrowUpRight size={16} />,
       onClick: () => router.push(`/forms/${form.id}`),
+    },
+    {
+      label: "View results",
+      icon: <BarChart3 size={16} />,
+      onClick: () => router.push(`/forms/${form.id}/results`),
     },
     {
       label: "Rename",
@@ -330,10 +336,14 @@ export function Dashboard() {
                     </div>
                     <div className="form-card-meta">
                       <Status status={form.status} />
-                      <span>
+                      <Link
+                        href={`/forms/${form.id}/results`}
+                        className="form-results-link"
+                        aria-label={`View results for ${form.title}: ${form.response_count} ${form.response_count === 1 ? "response" : "responses"}`}
+                      >
                         {form.response_count}{" "}
                         {form.response_count === 1 ? "response" : "responses"}
-                      </span>
+                      </Link>
                     </div>
                     <div className="form-card-bottom">
                       <span>
