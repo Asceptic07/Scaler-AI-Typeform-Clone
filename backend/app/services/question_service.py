@@ -8,6 +8,7 @@ from app.models import Form, Question, QuestionOption
 from app.models.types import CHOICE_TYPES, FormStatus
 from app.schemas.question import QuestionCreate, QuestionUpdate
 from app.services.form_service import response_count, touch
+from app.services.logic_service import validate_form_logic
 
 
 def ensure_editable(db: Session, form: Form) -> None:
@@ -63,21 +64,32 @@ def update_question(
         validated = QuestionCreate.model_validate(merged)
     except ValidationError as error:
         raise HTTPException(422, "; ".join(e["msg"] for e in error.errors())) from error
+    if question.type != validated.type:
+        question.logic_rules.clear()
     question.type = validated.type
     question.title = validated.title
     question.description = validated.description
     question.required = validated.required
     question.updated_at = datetime.now(UTC)
     # Do not replace option IDs on a title/description-only update.
-    if "options" in changes or (
-        validated.type not in CHOICE_TYPES and question.options
-    ):
-        question.options.clear()
+    if (
+        "options" in changes
+        and [o.label for o in question.options] != [o.label for o in validated.options]
+    ) or (validated.type not in CHOICE_TYPES and question.options):
+        # Reuse unchanged labels/IDs so ordinary saves do not remove their rules.
+        existing = {option.label: option for option in question.options}
+        offset = len(question.options) + len(validated.options) + 1
+        for option in question.options:
+            option.position += offset
         db.flush()
-        question.options.extend(
-            QuestionOption(label=o.label, position=i)
+        question.options[:] = [
+            existing.get(o.label) or QuestionOption(label=o.label, position=i)
             for i, o in enumerate(validated.options)
-        )
+        ]
+        for i, option in enumerate(question.options):
+            option.position = i
+        db.flush()
+        db.expire(question, ["logic_rules"])
     touch(form)
     db.flush()
     return question
@@ -99,6 +111,8 @@ def delete_question(db: Session, form: Form, question: Question) -> None:
     form.questions.remove(question)
     db.flush()
     set_positions(db, sorted(form.questions, key=lambda q: q.position))
+    for remaining in form.questions:
+        db.expire(remaining, ["logic_rules"])
     touch(form)
     db.flush()
 
@@ -108,6 +122,9 @@ def reorder_questions(db: Session, form: Form, ids: list[int]) -> None:
     questions = {question.id: question for question in form.questions}
     if len(ids) != len(set(ids)) or set(ids) != set(questions):
         raise HTTPException(422, "Provide every question ID in this form exactly once")
+    validate_form_logic(
+        form, {question_id: position for position, question_id in enumerate(ids)}
+    )
     set_positions(db, [questions[question_id] for question_id in ids])
     touch(form)
     db.flush()

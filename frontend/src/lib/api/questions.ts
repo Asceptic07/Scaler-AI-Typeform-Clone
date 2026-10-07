@@ -1,7 +1,11 @@
 import { request } from "@/lib/api/client";
-import type { Form, Question, QuestionInput } from "@/types/form";
+import type { Form, Question, QuestionInput, LogicRuleInput } from "@/types/form";
 
 export const questionsApi = {
+  saveLogic: (formId: number, id: number, rules: LogicRuleInput[]) =>
+    request<Question>(`/api/forms/${formId}/questions/${id}/logic`, {
+      method: "PUT", body: JSON.stringify({ rules }),
+    }),
   create: (formId: number, data: QuestionInput) =>
     request<Question>(`/api/forms/${formId}/questions`, {
       method: "POST",

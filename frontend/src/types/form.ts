@@ -14,6 +14,15 @@ export interface QuestionOption {
   label: string;
   position: number;
 }
+export interface LogicRuleInput {
+  condition_option_id?: number | null;
+  condition_boolean_value?: boolean | null;
+  condition_rating_value?: number | null;
+  target_question_id: number | null;
+}
+export interface LogicRule extends LogicRuleInput {
+  id: number;
+}
 export interface Question {
   id: number;
   type: QuestionType;
@@ -22,6 +31,7 @@ export interface Question {
   required: boolean;
   position: number;
   options: QuestionOption[];
+  logic_rules: LogicRule[];
   rating_min: number | null;
   rating_max: number | null;
 }

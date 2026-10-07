@@ -37,6 +37,7 @@ import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import { Menu } from "@/components/ui/menu";
 import { Modal } from "@/components/ui/modal";
 import { Status } from "@/components/ui/status";
+import { AppearanceToggle } from "@/components/ui/appearance-toggle";
 import {
   ConfirmDialog,
   copyShareLink,
@@ -191,14 +192,21 @@ export function Dashboard() {
           className="dashboard-header-actions"
           aria-label="Account navigation"
         >
-          <button onClick={() => setPlaceholder("Integrations")}>
+          <button
+            className="dashboard-secondary-action"
+            onClick={() => setPlaceholder("Integrations")}
+          >
             <Blocks size={16} aria-hidden="true" />
             Integrations
           </button>
-          <button onClick={() => setPlaceholder("Brand kit")}>
+          <button
+            className="dashboard-secondary-action"
+            onClick={() => setPlaceholder("Brand kit")}
+          >
             <BriefcaseBusiness size={16} aria-hidden="true" />
             Brand kit
           </button>
+          <AppearanceToggle />
           <button
             className="icon-button"
             aria-label="Help"

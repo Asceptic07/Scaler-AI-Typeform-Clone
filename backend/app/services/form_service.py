@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.models import Form, Question, Response
+from app.models import Form, LogicRule, Question, Response
 from app.models.types import FormStatus
 from app.schemas.form import FormDetail, FormSummary
 from app.schemas.question import QuestionCreate, QuestionRead
@@ -15,7 +15,10 @@ def get_form(db: Session, form_id: int) -> Form:
     form = db.scalar(
         select(Form)
         .where(Form.id == form_id)
-        .options(selectinload(Form.questions).selectinload(Question.options))
+        .options(
+            selectinload(Form.questions).selectinload(Question.options),
+            selectinload(Form.questions).selectinload(Question.logic_rules),
+        )
     )
     if form is None:
         raise HTTPException(404, "Form not found")
@@ -26,7 +29,10 @@ def get_public_form(db: Session, public_slug: str) -> Form:
     form = db.scalar(
         select(Form)
         .where(Form.public_slug == public_slug, Form.status == FormStatus.published)
-        .options(selectinload(Form.questions).selectinload(Question.options))
+        .options(
+            selectinload(Form.questions).selectinload(Question.options),
+            selectinload(Form.questions).selectinload(Question.logic_rules),
+        )
     )
     if form is None:
         raise HTTPException(404, "Published form not found")
@@ -88,8 +94,10 @@ def duplicate_form(db: Session, original: Form) -> Form:
     from app.services.question_service import add_question
 
     duplicate = create_form(db, f"{original.title[:195]} Copy")
+    question_map = {}
+    option_map = {}
     for question in sorted(original.questions, key=lambda q: q.position):
-        add_question(
+        copied = add_question(
             db,
             duplicate,
             QuestionCreate(
@@ -100,10 +108,34 @@ def duplicate_form(db: Session, original: Form) -> Form:
                 options=[{"label": o.label} for o in question.options],
             ),
         )
+        question_map[question.id] = copied
+        option_map.update(
+            {
+                old.id: new.id
+                for old, new in zip(question.options, copied.options, strict=True)
+            }
+        )
+    for question in original.questions:
+        for rule in question.logic_rules:
+            question_map[question.id].logic_rules.append(
+                LogicRule(
+                    condition_option_id=option_map[rule.condition_option_id]
+                    if rule.condition_option_id is not None
+                    else None,
+                    condition_boolean_value=rule.condition_boolean_value,
+                    condition_rating_value=rule.condition_rating_value,
+                    target_question_id=question_map[rule.target_question_id].id
+                    if rule.target_question_id is not None
+                    else None,
+                )
+            )
+    db.flush()
     return duplicate
 
 
 def publish_form(db: Session, form: Form) -> None:
+    from app.services.logic_service import validate_form_logic
+
     if not form.questions:
         raise HTTPException(400, "Add at least one question before publishing")
     for question in form.questions:
@@ -114,6 +146,7 @@ def publish_form(db: Session, form: Form) -> None:
             required=question.required,
             options=[{"label": o.label} for o in question.options],
         )
+    validate_form_logic(form)
     if form.public_slug is None:
         # Writers are serialized before this check for local SQLite.
         slug = token_urlsafe(24)

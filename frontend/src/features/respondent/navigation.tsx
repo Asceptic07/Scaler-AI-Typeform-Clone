@@ -4,12 +4,14 @@ export function Navigation({
   current,
   total,
   disabled,
+  last,
   onPrevious,
   onNext,
 }: {
   current: number;
   total: number;
   disabled: boolean;
+  last: boolean;
   onPrevious: () => void;
   onNext: () => void;
 }) {
@@ -34,7 +36,7 @@ export function Navigation({
           <button
             type="button"
             aria-label="Next question"
-            disabled={disabled || current === total - 1}
+            disabled={disabled || last}
             onClick={onNext}
           >
             <ChevronDown size={21} />

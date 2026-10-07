@@ -2,7 +2,8 @@
 
 import { useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Copy, RefreshCw } from "lucide-react";
+import { ArrowLeft, Copy, Download, Loader2, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { copyShareLink } from "@/features/forms/dialogs";
 import {
@@ -19,10 +20,34 @@ import { ResponseList } from "@/features/results/response-list";
 import { ResultsShell } from "@/features/results/results-shell";
 import { ResultsSummary } from "@/features/results/summary";
 import { useResults } from "@/features/results/use-results";
+import { errorMessage } from "@/lib/api/client";
+import { resultsApi } from "@/lib/api/results";
 
 export function Results({ formId }: { formId: number }) {
   const { form, responses, statistics, refresh, setForm } = useResults(formId);
   const [tab, setTab] = useState<"responses" | "summary">("responses");
+  const [exporting, setExporting] = useState(false);
+  async function exportCsv() {
+    setExporting(true);
+    try {
+      const { blob, filename } = await resultsApi.exportCsv(formId);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      try {
+        link.click();
+      } finally {
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+    } catch (error) {
+      toast.error(errorMessage(error));
+    } finally {
+      setExporting(false);
+    }
+  }
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   function tabKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     const next =
@@ -93,10 +118,25 @@ export function Results({ formId }: { formId: number }) {
             {responseCount(count)}
           </p>
         </div>
-        <Button variant="secondary" disabled={loading} onClick={refresh}>
-          <RefreshCw size={15} />
-          Refresh
-        </Button>
+        <div className="results-actions">
+          <Button
+            variant="secondary"
+            disabled={exporting}
+            aria-busy={exporting}
+            onClick={() => void exportCsv()}
+          >
+            {exporting ? (
+              <Loader2 size={15} className="spin" />
+            ) : (
+              <Download size={15} />
+            )}
+            {exporting ? "Exporting..." : "Export CSV"}
+          </Button>
+          <Button variant="secondary" disabled={loading} onClick={refresh}>
+            <RefreshCw size={15} />
+            Refresh
+          </Button>
+        </div>
       </div>
       <div className="results-tabs" role="tablist" aria-label="Results views">
         {(["responses", "summary"] as const).map((name, index) => (

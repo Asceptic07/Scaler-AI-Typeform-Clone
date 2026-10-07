@@ -4,6 +4,7 @@ import {
   typeInfo,
 } from "@/features/builder/question-types";
 import type { Question, QuestionType } from "@/types/form";
+import { supportsLogic } from "@/lib/logic";
 
 export function QuestionSettings({
   question,
@@ -11,12 +12,14 @@ export function QuestionSettings({
   busy,
   onChange,
   onSave,
+  onLogic,
 }: {
   question: Question;
   locked: boolean;
   busy: boolean;
   onChange: (question: Question) => void;
   onSave: () => void;
+  onLogic: () => void;
 }) {
   const { Icon, color } = typeInfo(question.type);
   return (
@@ -78,6 +81,14 @@ export function QuestionSettings({
           <span />
         </button>
       </div>
+      {supportsLogic(question) && (
+        <div className="question-logic">
+          <strong>Logic</strong>
+          <button className="button button-secondary" type="button" disabled={locked || busy} onClick={onLogic}>
+            {question.logic_rules.length ? `Edit logic (${question.logic_rules.length})` : "Set up logic"}
+          </button>
+        </div>
+      )}
     </aside>
   );
 }

@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, selectinload
 from app.models import Answer, Form, Question, Response
 from app.models.types import CHOICE_TYPES, FormStatus, QuestionType
 from app.schemas.response import AnswerRead, ResponseDetail, ResponseSubmit
+from app.services.logic_service import next_question_id, validate_form_logic
 
 
 def validate_answer(question: Question, value: object) -> dict[str, object] | None:
@@ -81,10 +82,17 @@ def submit_response(db: Session, form: Form, data: ResponseSubmit) -> Response:
         values[answer.question_id] = answer.value
     # Validate everything before adding a response. The caller owns one transaction.
     answers = []
-    for question in sorted(form.questions, key=lambda q: q.position):
+    validate_form_logic(form)
+    ordered = sorted(form.questions, key=lambda q: q.position)
+    question_id = ordered[0].id if ordered else None
+    # Only the authoritative reachable path is validated/stored. Stale answers
+    # from an abandoned branch are ignored, even when those questions are required.
+    while question_id is not None:
+        question = questions[question_id]
         fields = validate_answer(question, values.get(question.id))
         if fields is not None:
             answers.append(Answer(question_id=question.id, **fields))
+        question_id = next_question_id(question, values.get(question.id), ordered)
     response = Response(form_id=form.id, answers=answers)
     db.add(response)
     db.flush()
