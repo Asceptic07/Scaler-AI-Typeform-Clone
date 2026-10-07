@@ -37,6 +37,7 @@ import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import { Menu } from "@/components/ui/menu";
 import { Modal } from "@/components/ui/modal";
 import { Status } from "@/components/ui/status";
+import { AppearanceToggle } from "@/components/ui/appearance-toggle";
 import {
   ConfirmDialog,
   copyShareLink,
@@ -199,6 +200,7 @@ export function Dashboard() {
             <BriefcaseBusiness size={16} aria-hidden="true" />
             Brand kit
           </button>
+          <AppearanceToggle />
           <button
             className="icon-button"
             aria-label="Help"

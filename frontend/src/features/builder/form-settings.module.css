@@ -9,7 +9,7 @@
   align-items: flex-start;
   gap: 13px;
   padding: 20px 0;
-  border-top: 1px solid #e8e7e2;
+  border-top: 1px solid var(--border-subtle, #e8e7e2);
 }
 
 .placeholder:last-child {
@@ -21,10 +21,10 @@
   flex: 0 0 36px;
   height: 36px;
   place-items: center;
-  border: 1px solid #e8e7e2;
+  border: 1px solid var(--border-subtle, #e8e7e2);
   border-radius: 6px;
-  background: #f7f7f4;
-  color: #68685f;
+  background: var(--surface-subtle, #f7f7f4);
+  color: var(--text-secondary, #68685f);
 }
 
 .copy {
@@ -32,7 +32,7 @@
 }
 
 .copy h3 {
-  color: #393934;
+  color: var(--text-primary, #393934);
   font-size: 13px;
   font-weight: 500;
   line-height: 1.5;
@@ -40,7 +40,7 @@
 
 .copy p {
   margin-top: 4px;
-  color: #73736b;
+  color: var(--text-muted, #73736b);
   font-size: 12px;
   line-height: 1.6;
   overflow-wrap: anywhere;
@@ -50,10 +50,10 @@
   display: inline-block;
   margin-top: 10px;
   padding: 3px 7px;
-  border: 1px solid #e4e3dc;
+  border: 1px solid var(--border-subtle, #e4e3dc);
   border-radius: 4px;
-  background: #f2f2ee;
-  color: #66665e;
+  background: var(--surface-subtle, #f2f2ee);
+  color: var(--text-secondary, #66665e);
   font-size: 10px;
   line-height: 1.4;
 }
