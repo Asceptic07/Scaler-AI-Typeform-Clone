@@ -6,7 +6,7 @@ A full-stack, conversational form builder and respondent application built for t
 
 ## Live Demo
 
-- **Live Application URL:** [Live Demo URL - Pending Deployment]
+- **Live Application URL:** [https://scaler-ai-typeform-clone.vercel.app]
 - **GitHub Repository URL:** [https://github.com/Asceptic07/Scaler-AI-Typeform-Clone](https://github.com/Asceptic07/Scaler-AI-Typeform-Clone)
 
 > [!NOTE]
