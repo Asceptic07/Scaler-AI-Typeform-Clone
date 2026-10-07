@@ -1,5 +1,3 @@
-import { LockKeyhole, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import {
   isChoice,
   questionTypes,
@@ -13,21 +11,19 @@ export function QuestionSettings({
   busy,
   onChange,
   onSave,
-  onDelete,
 }: {
   question: Question;
   locked: boolean;
   busy: boolean;
   onChange: (question: Question) => void;
   onSave: () => void;
-  onDelete: () => void;
 }) {
   const { Icon, color } = typeInfo(question.type);
   return (
     <aside className="question-settings">
-      <div className="settings-heading">Question settings</div>
+      <div className="settings-heading">Question</div>
       <label className="field-label" htmlFor="question-type">
-        Question type
+        Answer type
       </label>
       <div className="type-select">
         <span className={`type-badge ${color}`}>
@@ -66,7 +62,6 @@ export function QuestionSettings({
       <div className="settings-rule">
         <div>
           <strong>Required</strong>
-          <p>Make sure this gets an answer.</p>
         </div>
         <button
           className="switch"
@@ -82,47 +77,6 @@ export function QuestionSettings({
         >
           <span />
         </button>
-      </div>
-      <div className="settings-detail">
-        <span>Answer</span>
-        <strong>
-          {question.type === "rating"
-            ? "5-point rating"
-            : isChoice(question.type) || question.type === "yes_no"
-              ? "Single selection"
-              : question.type === "email"
-                ? "Email address"
-                : question.type === "number"
-                  ? "Numeric value"
-                  : "Free text"}
-        </strong>
-        <p>
-          {question.type === "rating"
-            ? "A fixed scale from 1 to 5."
-            : isChoice(question.type)
-              ? "Edit your choices directly on the canvas."
-              : "A simple, focused space for their answer."}
-        </p>
-      </div>
-      <div className="settings-tip">
-        A good question is clear, concise, and asks one thing at a time.
-      </div>
-      <div className="settings-bottom">
-        {locked && (
-          <p className="locked-note">
-            <LockKeyhole size={14} />
-            Editing is protected for this form.
-          </p>
-        )}
-        <Button
-          variant="ghost"
-          className="danger-text"
-          disabled={locked || busy}
-          onClick={onDelete}
-        >
-          <Trash2 size={15} />
-          Delete question
-        </Button>
       </div>
     </aside>
   );

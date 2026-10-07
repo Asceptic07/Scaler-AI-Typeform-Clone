@@ -13,21 +13,21 @@ import type { QuestionType } from "@/types/form";
 export const questionTypes = [
   {
     type: "short_text",
-    label: "Short text",
+    label: "Short Text",
     description: "A few words can say a lot",
     Icon: Type,
     color: "blue",
   },
   {
     type: "long_text",
-    label: "Long text",
+    label: "Long Text",
     description: "Give your answers room to breathe",
     Icon: AlignLeft,
     color: "blue",
   },
   {
     type: "multiple_choice",
-    label: "Multiple choice",
+    label: "Multiple Choice",
     description: "A simple choice of options",
     Icon: ListChecks,
     color: "sage",
@@ -55,7 +55,7 @@ export const questionTypes = [
   },
   {
     type: "yes_no",
-    label: "Yes / No",
+    label: "Yes/No",
     description: "One question. Two possibilities",
     Icon: ToggleLeft,
     color: "lavender",

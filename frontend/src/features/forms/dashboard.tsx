@@ -6,26 +6,36 @@ import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   BarChart3,
+  Blocks,
+  BriefcaseBusiness,
+  CalendarDays,
   ChevronDown,
+  CircleHelp,
   Copy,
   FileText,
   Folder,
-  Home,
   LayoutGrid,
   Link2,
   List,
+  LockKeyhole,
+  PanelTop,
   Pencil,
   Plus,
   Search,
   Send,
+  Sparkles,
   Trash2,
   Undo2,
+  UserRoundPlus,
+  UsersRound,
+  Workflow,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Brand } from "@/components/layout/brand";
 import { Button } from "@/components/ui/button";
 import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import { Menu } from "@/components/ui/menu";
+import { Modal } from "@/components/ui/modal";
 import { Status } from "@/components/ui/status";
 import {
   ConfirmDialog,
@@ -36,6 +46,7 @@ import {
 import { errorMessage } from "@/lib/api/client";
 import { formsApi } from "@/lib/api/forms";
 import type { FormSummary } from "@/types/form";
+import "./dashboard.css";
 
 type DialogState =
   | { type: "create" }
@@ -49,9 +60,11 @@ export function Dashboard() {
   const [reload, setReload] = useState(0);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("created");
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useState<"grid" | "list">("list");
   const [dialog, setDialog] = useState<DialogState>(null);
   const [busyId, setBusyId] = useState<number | null>(null);
+  const [bannerVisible, setBannerVisible] = useState(true);
+  const [placeholder, setPlaceholder] = useState<string | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     formsApi
@@ -140,6 +153,11 @@ export function Dashboard() {
     ...(form.status === "published" && form.public_slug
       ? [
           {
+            label: "Share",
+            icon: <Send size={16} />,
+            onClick: () => setDialog({ type: "share", form }),
+          },
+          {
             label: "Copy share link",
             icon: <Link2 size={16} />,
             onClick: () => void copyShareLink(form.public_slug!),
@@ -154,25 +172,84 @@ export function Dashboard() {
     },
   ];
   return (
-    <div className="workspace-app">
+    <div className="workspace-app dashboard-workspace">
       <header className="workspace-header">
-        <Brand />
-        <div className="workspace-account">
-          <span>Personal workspace</span>
-          <span className="avatar" aria-label="Default creator">
-            SC
+        <button
+          className="dashboard-account"
+          onClick={() => setPlaceholder("Account settings")}
+          aria-label="Personal workspace account"
+        >
+          <span className="dashboard-brand-mark" aria-hidden="true">
+            <i />
+            <i />
+            <i />
           </span>
-        </div>
+          <span>Personal workspace</span>
+          <ChevronDown size={14} aria-hidden="true" />
+        </button>
+        <nav
+          className="dashboard-header-actions"
+          aria-label="Account navigation"
+        >
+          <button onClick={() => setPlaceholder("Integrations")}>
+            <Blocks size={16} aria-hidden="true" />
+            Integrations
+          </button>
+          <button onClick={() => setPlaceholder("Brand kit")}>
+            <BriefcaseBusiness size={16} aria-hidden="true" />
+            Brand kit
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Help"
+            onClick={() => setPlaceholder("Help")}
+          >
+            <CircleHelp size={18} />
+          </button>
+          <button
+            className="avatar"
+            aria-label="Creator account"
+            onClick={() => setPlaceholder("Account settings")}
+          >
+            SC
+          </button>
+        </nav>
       </header>
+      {bannerVisible && (
+        <aside
+          className="dashboard-info-banner"
+          aria-label="Workspace information"
+        >
+          <span>Your workspace is ready to collect responses.</span>
+          <button
+            className="icon-button"
+            aria-label="Dismiss workspace banner"
+            onClick={() => setBannerVisible(false)}
+          >
+            <X size={15} />
+          </button>
+        </aside>
+      )}
       <nav className="workspace-tabs" aria-label="Main navigation">
-        <Link href="/" className="workspace-tab">
-          <Home size={17} />
-          Home
-        </Link>
         <Link href="/" className="workspace-tab active" aria-current="page">
           <FileText size={17} />
           Forms
         </Link>
+        {[
+          { label: "Contacts", Icon: UsersRound },
+          { label: "Automations", Icon: Workflow },
+          { label: "Insights", Icon: BarChart3 },
+          { label: "Pages", Icon: PanelTop },
+        ].map(({ label, Icon }) => (
+          <button
+            key={label}
+            className="workspace-tab"
+            onClick={() => setPlaceholder(label)}
+          >
+            <Icon size={17} aria-hidden="true" />
+            {label}
+          </button>
+        ))}
       </nav>
       <div className="workspace-body">
         <aside className="workspace-sidebar">
@@ -192,45 +269,66 @@ export function Dashboard() {
               onChange={(event) => setSearch(event.target.value)}
             />
           </div>
-          <span className="sidebar-label">WORKSPACES</span>
+          <div className="dashboard-sidebar-heading">
+            <span className="sidebar-label">WORKSPACES</span>
+            <button
+              className="icon-button"
+              aria-label="Add workspace"
+              onClick={() => setPlaceholder("Workspaces")}
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+          <p className="dashboard-private-label">
+            <LockKeyhole size={12} aria-hidden="true" />
+            Private
+          </p>
           <a href="#workspace-content" className="workspace-folder">
             <Folder size={17} />
             My workspace<span>{forms?.length ?? "—"}</span>
           </a>
-          <div className="sidebar-note">
-            <div className="tiny-mark" />
-            <p>
-              A little curiosity.
-              <br />A lot of possibilities.
-            </p>
-            <span>Make your next conversation count.</span>
+          <div className="dashboard-response-usage">
+            <span>Responses collected</span>
+            <strong>
+              {forms
+                ? `${forms.reduce((total, form) => total + form.response_count, 0).toLocaleString()} responses`
+                : "—"}
+            </strong>
           </div>
+          <button
+            className="dashboard-ai"
+            onClick={() => setPlaceholder("Ask AI")}
+          >
+            <Sparkles size={16} aria-hidden="true" />
+            <span>Ask AI</span>
+            <span>Coming soon</span>
+          </button>
         </aside>
         <main id="workspace-content" className="workspace-content">
-          <div className="workspace-breadcrumb">
-            Your forms, all in one place
-          </div>
           <div className="workspace-title-row">
-            <div>
+            <div className="dashboard-workspace-title">
               <h1>My workspace</h1>
-              <p>
-                {forms
-                  ? `${forms.length} form${forms.length === 1 ? "" : "s"} · Built for better conversations`
-                  : "A home for your next great question"}
-              </p>
+              <Menu
+                label="Workspace actions"
+                items={[
+                  {
+                    label: "Workspace settings",
+                    icon: <Folder size={16} />,
+                    onClick: () => setPlaceholder("Workspace settings"),
+                  },
+                ]}
+              />
+              <button
+                className="dashboard-invite"
+                onClick={() => setPlaceholder("Invite collaborators")}
+              >
+                <UserRoundPlus size={16} aria-hidden="true" />
+                Invite
+              </button>
             </div>
-            <Button
-              className="create-main"
-              onClick={() => setDialog({ type: "create" })}
-            >
-              <Plus size={17} />
-              Create form
-            </Button>
-          </div>
-          <div className="workspace-toolbar">
-            <span>{search ? `Results for “${search}”` : "All forms"}</span>
             <div className="view-controls">
               <label className="sort-control">
+                <CalendarDays size={15} aria-hidden="true" />
                 <select
                   aria-label="Sort forms"
                   value={sort}
@@ -240,25 +338,49 @@ export function Dashboard() {
                   <option value="updated">Last updated</option>
                   <option value="title">Name A–Z</option>
                 </select>
-                <ChevronDown size={14} />
+                <ChevronDown size={13} aria-hidden="true" />
               </label>
               <div className="segmented">
-                <button
-                  aria-label="Grid view"
-                  aria-pressed={view === "grid"}
-                  onClick={() => setView("grid")}
-                >
-                  <LayoutGrid size={17} />
-                </button>
                 <button
                   aria-label="List view"
                   aria-pressed={view === "list"}
                   onClick={() => setView("list")}
                 >
-                  <List size={17} />
+                  <List size={16} />
+                  <span>List</span>
+                </button>
+                <button
+                  aria-label="Grid view"
+                  aria-pressed={view === "grid"}
+                  onClick={() => setView("grid")}
+                >
+                  <LayoutGrid size={16} />
+                  <span>Grid</span>
                 </button>
               </div>
             </div>
+            <Button
+              className="create-main"
+              onClick={() => setDialog({ type: "create" })}
+            >
+              <Plus size={17} />
+              Create form
+            </Button>
+          </div>
+          {search && (
+            <p className="dashboard-search-caption" role="status">
+              Results for “{search}” · {displayed.length}{" "}
+              {displayed.length === 1 ? "form" : "forms"}
+            </p>
+          )}
+          <div className="workspace-search mobile-workspace-search">
+            <Search size={17} aria-hidden="true" />
+            <input
+              aria-label="Search forms"
+              placeholder="Search forms"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+            />
           </div>
           {error ? (
             <ErrorState
@@ -294,12 +416,82 @@ export function Dashboard() {
                 Clear search
               </Button>
             </div>
+          ) : view === "list" ? (
+            <div className="dashboard-form-list">
+              <div className="dashboard-list-heading" aria-hidden="true">
+                <span>Form</span>
+                <span>Responses</span>
+                <span>Updated</span>
+                <span>Integrations</span>
+                <span />
+              </div>
+              <ul className="forms-list" aria-label="Forms in My workspace">
+                {displayed.map((form) => (
+                  <li
+                    key={form.id}
+                    className="dashboard-form-row form-card"
+                    aria-label={form.title}
+                  >
+                    <div className="dashboard-form-identity">
+                      <span
+                        className={`dashboard-form-thumbnail cover-${form.id % 3}`}
+                        aria-hidden="true"
+                      >
+                        <FileText size={18} strokeWidth={1.5} />
+                      </span>
+                      <Link
+                        href={`/forms/${form.id}`}
+                        className="form-card-title"
+                        title={form.title}
+                      >
+                        {form.title}
+                      </Link>
+                      <Status status={form.status} />
+                    </div>
+                    <Link
+                      href={`/forms/${form.id}/results`}
+                      className="form-results-link dashboard-response-count"
+                      aria-label={`View results for ${form.title}: ${form.response_count} ${form.response_count === 1 ? "response" : "responses"}`}
+                    >
+                      <span className="dashboard-mobile-label">Responses</span>
+                      {form.response_count.toLocaleString()}
+                    </Link>
+                    <time
+                      className="dashboard-updated"
+                      dateTime={form.updated_at}
+                    >
+                      <span className="dashboard-mobile-label">Updated</span>
+                      {new Intl.DateTimeFormat(undefined, {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      }).format(new Date(form.updated_at))}
+                    </time>
+                    <div className="dashboard-row-integration">
+                      <button
+                        className="icon-button"
+                        aria-label={`Integrations for ${form.title} — coming soon`}
+                        title="Integrations — coming soon"
+                        onClick={() => setPlaceholder("Integrations")}
+                      >
+                        <Blocks size={16} />
+                      </button>
+                    </div>
+                    <Menu
+                      label={`Actions for ${form.title}`}
+                      items={menuItems(form)}
+                      disabled={busyId !== null}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
           ) : (
-            <div className={view === "grid" ? "forms-grid" : "forms-list"}>
+            <div className="forms-grid">
               {displayed.map((form, index) => (
                 <article
                   key={form.id}
-                  className={`form-card ${view === "list" ? "form-card-list" : ""}`}
+                  className="form-card"
                   aria-label={form.title}
                 >
                   <Link
@@ -409,6 +601,23 @@ export function Dashboard() {
       )}
       {dialog?.type === "share" && (
         <ShareDialog form={dialog.form} onClose={() => setDialog(null)} />
+      )}
+      {placeholder && (
+        <Modal title={placeholder} onClose={() => setPlaceholder(null)}>
+          {placeholder !== "Help" && (
+            <span className="dashboard-placeholder-badge">Coming soon</span>
+          )}
+          <p className="modal-description">
+            {placeholder === "Help"
+              ? "Create a form, add your questions, and publish it to get a shareable link. Open Results to read answers and see question summaries."
+              : `${placeholder} will be available in a future update. Your forms and responses are ready to use today.`}
+          </p>
+          <div className="modal-actions">
+            <Button variant="secondary" onClick={() => setPlaceholder(null)}>
+              Done
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );

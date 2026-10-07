@@ -1,5 +1,4 @@
-import { ArrowRight, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 import { AnswerVisual } from "@/features/builder/answer-visual";
 import { isChoice } from "@/features/builder/question-types";
 import type { Question } from "@/types/form";
@@ -23,7 +22,7 @@ export function QuestionEditor({
     <div className="editor-surface">
       <div className="editor-question">
         <span className="question-number">
-          {question.position + 1} <ArrowRight size={15} />
+          {question.position + 1}
         </span>
         <div className="editor-content">
           <textarea
@@ -96,9 +95,9 @@ export function QuestionEditor({
                   </button>
                 </div>
               ))}
-              <Button
-                variant="ghost"
+              <button
                 className="add-choice"
+                type="button"
                 disabled={busy || question.options.length >= 100}
                 onClick={() => {
                   let count = question.options.length + 1;
@@ -122,9 +121,8 @@ export function QuestionEditor({
                   onSave();
                 }}
               >
-                <Plus size={15} />
                 Add choice
-              </Button>
+              </button>
             </div>
           ) : (
             <AnswerVisual
@@ -143,14 +141,6 @@ export function QuestionEditor({
               {error}
             </p>
           )}
-          <div className="canvas-continue">
-            <span className="preview-ok">
-              OK <span>✓</span>
-            </span>
-            <span>
-              press <strong>Enter ↵</strong>
-            </span>
-          </div>
         </div>
       </div>
     </div>

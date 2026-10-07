@@ -1,9 +1,49 @@
-# Typeform Clone — current development setup
+# Typeform Clone
 
-Phase 7 adds creator-facing response lists, individual answers, and question
-summaries to the existing dashboard, builder, and public respondent experience.
+An original Typeform-inspired application built for the **Scaler AI SDE Fullstack
+Assignment**. A creator can build and publish a form, collect answers through a
+conversational public experience, and review persisted responses and statistics.
 
-Run these commands in separate terminals from the repository root.
+## Features
+
+- **Workspace:** searchable grid/list views; create, rename, duplicate, and delete
+  forms; draft/published status and real response counts.
+- **Builder:** inline question/title/help-text editing, required settings,
+  editable choices, pointer and keyboard drag-and-drop ordering, and live
+  desktop/mobile preview. Changes persist through the API.
+- **Eight question types:** short text, long text, multiple choice, dropdown,
+  email, number, yes/no, and rating.
+- **Publishing:** stable public share links, clipboard feedback, and unpublishing.
+- **Respondent experience:** full-screen, one question at a time; restrained
+  transitions, progress, keyboard navigation, client/server validation,
+  submission to SQLite, and a confirmed thank-you screen. No login is needed.
+- **Results:** newest-first responses, full individual answers including skipped
+  optional questions, local timestamps, answered counts, choice/dropdown/yes-no/
+  rating distributions, percentages, and rating averages. Manual refresh.
+- **Feedback:** loading, empty, and error states; accessible dialogs, menus, tabs,
+  visible keyboard focus, and reduced-motion support.
+- The builder keeps its primary workflow focused on question editing, preview,
+  publishing, sharing, and results. Theme customization, branching, and external
+  integrations are outside the assignment scope.
+
+## Tech stack
+
+| Layer | Tools used |
+| --- | --- |
+| Frontend | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4 and original CSS |
+| Interaction | dnd-kit, Framer Motion, Lucide React, Sonner, clsx |
+| Validation | Typed frontend validators; Zod in the health-response helper |
+| Backend | Python 3.12, FastAPI, Uvicorn, SQLAlchemy 2, Pydantic 2, pydantic-settings, email-validator |
+| Persistence | SQLite, Alembic |
+| Development | npm, uv, ESLint, pytest, httpx, Ruff |
+
+Exact resolved versions are in `frontend/package-lock.json` and `backend/uv.lock`.
+The repository retains its existing environment and dependency versions.
+
+## Local setup
+
+Prerequisites: **Node.js 24**, **Python 3.12**, and **uv**. Clone the repository,
+then run the frontend and backend in separate terminals from the repository root.
 
 Frontend:
 
@@ -13,7 +53,7 @@ npm install
 npm run dev
 ```
 
-Backend (uses the existing `backend/.venv`):
+Backend:
 
 ```sh
 cd backend
@@ -23,104 +63,141 @@ uv run python -m app.db.seed
 uv run uvicorn app.main:app --reload
 ```
 
-- Frontend: http://localhost:3000
-- Backend health: http://localhost:8000/health
-- FastAPI docs: http://localhost:8000/docs
+`uv` uses `backend/.venv`; manual virtual-environment creation is unnecessary.
+Migrate before starting the API. Application startup and health checks do not
+create tables.
+
+| Local address | Purpose |
+| --- | --- |
+| http://localhost:3000 | Workspace and public frontend |
+| http://localhost:8000/health | API health |
+| http://localhost:8000/docs | Interactive API schemas and examples |
+
+### Environment variables
 
 Local defaults work without environment files. For overrides, copy
 `backend/.env.example` to `backend/.env` and `frontend/.env.example` to
-`frontend/.env.local`. Restart the relevant server after changes. Public frontend
-variables are bundled at build time, so production changes require rebuilding.
+`frontend/.env.local`, then edit the copies. Keep real environment files out of Git.
 
-Frontend routes:
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:8000` | Backend base URL used by browser requests; no `/api` suffix |
+| `DATABASE_URL` | `sqlite:///./typeform_clone.db` | SQLAlchemy SQLite URL; relative paths resolve from `backend/` |
+| `FRONTEND_ORIGIN` | `http://localhost:3000` | Exact frontend origin allowed by CORS; no trailing slash |
+| `APP_NAME` | `Typeform Clone API` | API title, OpenAPI title, and health service name |
+| `APP_ENV` | `development` | Environment label; it does not enable authentication or change database behavior |
 
-- `/`: workspace dashboard with real forms, search, grid/list views, create,
-  rename, duplicate, publish/unpublish, deletion confirmation, and share links.
-- `/forms/[formId]`: creator builder with all eight question types, inline title
-  and help-text editing, option editing, required toggles, persisted pointer and
-  keyboard reordering, and desktop/mobile preview.
-- `/to/[slug]`: published public form, accessible without login. Answers remain
-  local while navigating, then submit together to the real backend. Successful
-  persistence displays the thank-you screen.
-- `/forms/[formId]/results`: responses newest first, local submission times,
-  and a Summary tab with answered counts and choice, dropdown, yes/no, and rating
-  distributions. Refresh retrieves current results; there is no polling.
-- `/forms/[formId]/results/[responseId]`: all questions and submitted answers in
-  form order, including unanswered optional questions. Results are linked from
-  the builder navigation and dashboard response counts/context menus.
+The `.env.example` files are the source of truth. Restart after configuration
+changes. Set `NEXT_PUBLIC_API_URL` **before building** the frontend; public
+variables are embedded at build time and require a rebuild to change.
 
-Frontend features live in `src/features/forms/` and `src/features/builder/`.
-Small shared controls/dialogs live in `src/components/ui/`, domain types in
-`src/types/form.ts`, and native-fetch API functions in `src/lib/api/`. Pages and
-the root layout remain Server Components; interactive features use scoped Client
-Components and React state. Sonner provides toast feedback.
+## Architecture
 
-Question text saves on blur; toggles, type changes, and option additions/removals
-save immediately. Pending saves are serialized so newer local edits are retained.
-Preview uses the current working definition and never submits answers. Publishing
-requires saved, valid questions and displays a link at `/to/{publicSlug}` using
-the browser origin. The public link opens the respondent experience directly.
-Published forms and forms with responses have read-only questions, matching the
-backend policy. The builder offers unpublishing or duplication as appropriate.
-CORS allows browser requests from the configured `FRONTEND_ORIGIN`.
+```text
+frontend/src/
+  app/                    Server Component routes and root layout
+  components/             Shared buttons, status, menus, dialogs, and feedback
+  features/forms/         Workspace and form management
+  features/builder/       Question editor, ordering, settings, and preview
+  features/respondent/    Public navigation, validation, answers, and submission
+  features/results/       Response list/detail and question summaries
+  lib/api/                Typed native-fetch API helpers
+  types/                  Frontend domain/API contracts
+backend/
+  app/api/                Central router and transaction dependencies
+  app/core/               Centralized pydantic-settings configuration
+  app/db/                 Declarative Base, engines/sessions, and seed command
+  app/models/             SQLAlchemy relationships and constraints
+  app/schemas/            Pydantic request/response validation
+  app/services/           Form/question/response/statistics business logic
+  app/routes/             Thin FastAPI route handlers
+  alembic/                Schema migrations
+  tests/                  API, database, migration, and concurrency tests
+```
 
-The public feature lives in `src/features/respondent/`, with typed API helpers in
-`src/lib/api/public.ts`. It loads the published definition when the route opens,
-preserves answers when navigating backward, validates before continuing, and
-prevents repeated submission while a request is pending. Server errors retain
-answers; identified validation errors return to the relevant question. Invalid
-or unpublished slugs show the same unavailable state.
+Interactive frontend features are scoped Client Components; pages/layout remain
+Server Components. React state is sufficient for local interactions. API helpers
+use native fetch, cancellation, bounded request timeouts, and human-readable
+errors. No polling, HTTP library, or global state-management framework is used.
 
-Enter continues single-line/choice questions; Up/Down navigate questions outside
-multiline inputs and native selects. Long-text Enter and Shift+Enter insert
-newlines; use OK to continue. Dropdown keys keep their native behavior. Choice
-letters, Y/N, rating digits 1–5, and Left/Right selection are supported. Framer
-Motion transitions respect reduced motion, and a thin progress bar shows the
-current question. Refresh restarts unfinished answers; no localStorage is used.
+SQLite connections enable foreign-key enforcement. Sessions are request-scoped.
+Mutations use one transaction and commit once or roll back; SQLite writers acquire
+`BEGIN IMMEDIATE` before validating state. This prevents publication, response
+submission, and question edits from racing past history protection. Distributions
+and response counts are computed from persisted rows.
 
-The backend uses thin `app/routes/` handlers, Pydantic v2 `app/schemas/`, business
-logic in `app/services/`, and typed SQLAlchemy models in `app/models/`.
-`app/db/session.py` provides request-scoped sessions and enables SQLite foreign
-keys on every connection. SQLite writers begin with `BEGIN IMMEDIATE` before
-reading state, so question edits, publishing, and submission validation cannot
-race with another writer. Each mutation commits once or rolls back completely.
-Startup and health checks do not create tables. All schema changes use Alembic.
-Relative database paths resolve from `backend/` for both the API and migrations.
+Question text saves on blur. Type/options/required changes save immediately.
+Pending saves are serialized, retaining newer local edits. Preview uses the
+working form definition and never submits answers.
 
-The database has these relational tables:
+### Frontend routes
 
-| Table | Purpose and constraints |
+| Route | Purpose |
 | --- | --- |
-| `forms` | Required title, draft/published status, unique nullable public slug, UTC timestamps. Published forms must have a slug. |
-| `questions` | Form FK, constrained type, title, help text, required flag, timestamps. Unique `(form_id, position)` and nonnegative position. |
-| `question_options` | Question FK, label, timestamp, unique `(question_id, position)`. |
-| `responses` | Form FK and UTC submission timestamp; indexed for newest-first retrieval. |
-| `answers` | Response/question FKs, optional option FK, timestamp. Unique `(response_id, question_id)`; exactly one text, number, boolean, or option value. |
+| `/` | Creator workspace |
+| `/forms/[formId]` | Builder and preview |
+| `/to/[slug]` | Published public respondent flow |
+| `/forms/[formId]/results` | Responses and Summary tabs |
+| `/forms/[formId]/results/[responseId]` | Full individual response |
 
-Form deletion cascades through questions, options, responses, and answers.
-Question deletion cascades through its options and dependent answers.
-Application validation additionally ensures answers refer to this form's
-questions and each selected option belongs to the exact question.
-Response counts are derived from persisted responses, never manually incremented.
+## Database schema
 
-Question creation, editing, deletion, and reordering return **409** while a form
-is published or has any submissions. Unpublishing unlocks forms without
-submissions. Forms with submissions must be duplicated to revise their question
-definition. This preserves question text, types, and option labels in results.
-Form renaming, unpublishing, and explicit whole-form deletion remain available.
-Duplication creates a fresh draft with new question/option IDs and no submissions
-or slug. Unpublishing retains the slug; republishing keeps the same public URL.
+| Table | Important columns and constraints |
+| --- | --- |
+| `forms` | Title, draft/published status, unique nullable public slug, created/updated timestamps; published forms require a slug |
+| `questions` | Form FK, one of eight types, title, optional description, required flag, position, timestamps; unique `(form_id, position)` |
+| `question_options` | Question FK, label, position, creation timestamp; unique `(question_id, position)` |
+| `responses` | Form FK, UTC submission timestamp; index on `(form_id, submitted_at, id)` for newest-first retrieval |
+| `answers` | Response/question FKs, optional option FK, text/number/boolean values, creation timestamp; unique `(response_id, question_id)` and exactly one stored value |
 
-Supported types: `short_text`, `long_text`, `multiple_choice`, `dropdown`, `email`,
-`number`, `yes_no`, and `rating`. Both choice types accept **one option ID** per
-answer. Rating is an integer from **1 to 5**. Numbers must be finite JSON numbers;
-integer inputs are limited to the exact double-precision range ±2^53. Booleans
-and numeric strings are rejected for numeric questions. Email validation checks
-format without DNS lookups. Optional missing/null/blank answers are omitted;
-required missing/null/blank answers are rejected. Invalid submissions leave no
-partial response. Short text is limited to 1,000 characters, long text to 20,000.
+```mermaid
+erDiagram
+    forms ||--o{ questions : contains
+    questions ||--o{ question_options : offers
+    forms ||--o{ responses : receives
+    responses ||--o{ answers : contains
+    questions ||--o{ answers : answers
+    question_options o|--o{ answers : selected
+```
 
-Migration and seed commands (from `backend/`):
+Deleting a form cascades to its questions, options, responses, and answers.
+Question/option deletion cascades to their dependent rows. Service validation
+also ensures every submitted question belongs to the form and every selected
+option belongs to that exact question. Ordering is explicit and zero-based.
+SQLite timestamps are exposed as UTC in API JSON and rendered in browser-local
+time in Results. No database file is committed.
+
+## API overview
+
+Full schemas and interactive examples are available at `/docs`.
+
+| Method | Route | Behavior |
+| --- | --- | --- |
+| GET | `/health` | Service status independent of database |
+| GET / POST | `/api/forms` | List forms with counts / create draft |
+| GET / PATCH / DELETE | `/api/forms/{id}` | Definition / rename / cascade delete |
+| POST | `/api/forms/{id}/duplicate` | Fresh draft copy without responses or slug |
+| POST | `/api/forms/{id}/publish` or `/unpublish` | Publication and stable public URL |
+| POST | `/api/forms/{id}/questions` | Append a question |
+| PATCH / DELETE | `/api/forms/{id}/questions/{questionId}` | Update / remove question |
+| PUT | `/api/forms/{id}/questions/reorder` | Persist the complete question order |
+| GET | `/api/public/forms/{slug}` | Published public definition |
+| POST | `/api/public/forms/{slug}/responses` | Validate and persist a whole submission |
+| GET | `/api/forms/{id}/responses` | Newest-first submissions including answers |
+| GET | `/api/forms/{id}/responses/{responseId}` | One response with question text and option labels |
+| GET | `/api/forms/{id}/statistics` | Total count and per-question counts/distributions |
+
+Create/rename: `{"title":"Customer feedback"}`. Choice questions accept
+`"options":[{"label":"Basic"},{"label":"Pro"}]`. Submit
+`{"answers":[{"question_id":1,"value":"Jamie"}]}`; choice values use the option
+IDs from the public definition. Omit unanswered optional questions.
+
+Creation returns 201, deletion 204, missing resources 404, protected question
+mutations 409, invalid data 422, and publishing an empty form 400.
+
+## Migrations and seed data
+
+Run from `backend/`:
 
 ```sh
 uv run alembic upgrade head
@@ -129,63 +206,151 @@ uv run alembic check
 uv run python -m app.db.seed
 ```
 
-The seed creates `sample-product-feedback` and `sample-event-survey`, each with
-four required questions and three valid responses. Together they cover all eight
-question types. Existing samples are identified by their stable slugs and skipped
-without overwriting user edits or responses. The database and caches stay ignored
-by Git. Migration `e42a53e64a4a` creates the initial schema.
+For future schema changes, import models through `app.models`, then run
+`uv run alembic revision --autogenerate -m "describe change"`. Review the generated
+migration before applying it. Current schema head: `e42a53e64a4a`.
 
-API routes (full request/response schemas at `/docs`):
+The idempotent seed creates two published forms, each with three responses:
+`sample-product-feedback` and `sample-event-survey`. Across them are all eight
+question types. Existing samples are identified by slug and skipped, preserving
+edits and collected responses. Seeding again does not duplicate data.
 
-| Method | Route | Behavior |
-| --- | --- | --- |
-| GET | `/health` | Service health, independent of the database |
-| POST / GET | `/api/forms` | Create draft / list with response counts |
-| GET / PATCH / DELETE | `/api/forms/{form_id}` | Full definition / rename / cascade delete |
-| POST | `/api/forms/{form_id}/duplicate` | Copy definition into a draft |
-| POST | `/api/forms/{form_id}/publish` | Validate and publish with a random slug |
-| POST | `/api/forms/{form_id}/unpublish` | Block public access, retain slug |
-| POST | `/api/forms/{form_id}/questions` | Append question |
-| PATCH / DELETE | `/api/forms/{form_id}/questions/{question_id}` | Update / delete question |
-| PUT | `/api/forms/{form_id}/questions/reorder` | Set complete order |
-| GET | `/api/public/forms/{public_slug}` | Published definition without results metadata |
-| POST | `/api/public/forms/{public_slug}/responses` | Validate and submit answers atomically |
-| GET | `/api/forms/{form_id}/responses` | Responses newest first with answer summaries |
-| GET | `/api/forms/{form_id}/responses/{response_id}` | Values, question text/type, option labels |
-| GET | `/api/forms/{form_id}/statistics` | Total count, answered counts, choice/boolean/rating distributions |
+## Tests and checks
 
-Create/rename uses `{"title": "Customer feedback"}`. Question payloads use
-`{"type": "dropdown", "title": "Choose a plan", "required": true, "options": [{"label": "Basic"}, {"label": "Pro"}]}`.
-Reordering uses `{"question_ids": [3, 1, 2]}` and requires every question ID exactly
-once. Submission uses `{"answers": [{"question_id": 1, "value": "Alex"}, {"question_id": 2, "value": 7}]}`;
-for choice questions the value is the option ID returned by the form endpoint.
-Creation returns **201**, deletion **204**, missing resources **404**, invalid
-payloads/answers **422**, and publishing an empty form **400**.
-
-The assignment assumes one default creator, so management endpoints have no
-authentication. Response listing currently returns all submissions without
-pagination. SQLite serializes writers; this is intended for the assignment's
-local database workload. Timestamps are stored in UTC.
-
-Validation:
+Frontend:
 
 ```sh
 cd frontend
 npm run lint
 npm run build
+npm audit --omit=dev
 ```
+
+Backend:
 
 ```sh
 cd backend
 uv run ruff check .
 uv run pytest
-uv run alembic upgrade head
 uv run alembic current
+uv run alembic check
 ```
 
-Tests migrate a fresh temporary SQLite database for each test and never use the
-developer database. Coverage includes the API workflows, invalid submissions,
-history protection, database constraints/cascades, seed idempotence, concurrent
-question creation, and migration downgrade/upgrade. The installed Starlette
-TestClient adapter reports a harmless `httpx` deprecation warning; no dependency
-changes are required for this phase.
+The 55 backend tests migrate isolated temporary SQLite databases and do not use
+the developer database. Coverage includes CRUD, publication/history protection,
+validation, all answer types, constraints/cascades, seed idempotence, transactional
+ordering, concurrency, and migration downgrade/upgrade. Browser QA covers creator
+and respondent workflows, Results, keyboard interaction, errors, and responsive
+layouts; see [the requirement audit](docs/QA.md).
+
+## Assumptions and known limitations
+
+- One default creator; management and results endpoints have no authentication.
+  This follows the assignment simplification and is intended for an evaluation
+  deployment, not an authenticated multi-tenant service.
+- Multiple choice and dropdown select one option. Rating is fixed at 1–5.
+- Published forms and forms with responses have protected question definitions.
+  Unpublish an unanswered form to edit it; duplicate a form with responses.
+  Renaming and unpublishing remain available. Duplication omits submissions.
+- Only completed submissions persist. Refresh restarts unfinished public answers;
+  they are not stored in localStorage. Failed submissions retain answers on screen.
+- Response listing returns all submissions without pagination. SQLite serializes
+  writers; deployment uses one service instance with one local durable database.
+- Theme customization, branching, integrations, CSV export, file upload, partial
+  tracking, authentication, and dark mode are outside the current scope.
+- The installed Starlette TestClient/httpx adapter emits a deprecation warning.
+  Development-only npm advisories are separate from the production dependency audit.
+- Browser QA uses Chrome with emulated viewport sizes; physical mobile-device and
+  screen-reader testing have not been performed.
+
+## Third-party resources and licenses
+
+This implementation is original. **No Typeform source code, CSS, paid templates,
+logos, or proprietary Typeform assets were copied or used.** Public
+[Typeform documentation](https://help.typeform.com/hc/en-us/articles/360053660271-My-first-form)
+was consulted only for layout and interaction references. The wordmark, form
+covers, UI styles, and browser icon are original code/vector work.
+
+The following license declarations were checked in installed package metadata,
+with official sources for fonts and standalone tools:
+
+| Resource | License |
+| --- | --- |
+| Next.js, React/React DOM, Tailwind CSS, dnd-kit, Framer Motion, Sonner, clsx, Zod | MIT |
+| Lucide React package | ISC; some inherited Feather icons use MIT, as described in [Lucide's license](https://lucide.dev/license) |
+| TypeScript | Apache-2.0 |
+| ESLint and Next.js ESLint configuration | MIT |
+| FastAPI, SQLAlchemy, Pydantic, pydantic-settings, Alembic, pytest, Ruff | MIT |
+| Uvicorn, httpx | BSD-3-Clause |
+| email-validator | Unlicense |
+| [uv](https://github.com/astral-sh/uv#license) | MIT OR Apache-2.0 |
+| [Python](https://docs.python.org/3/license.html) | PSF License Agreement and accompanying notices |
+| [SQLite](https://www.sqlite.org/copyright.html) | Public domain |
+| Geist / Geist Mono via `next/font` | [SIL Open Font License 1.1](https://github.com/vercel/geist-font/blob/main/OFL.txt); bundled notice at `frontend/public/licenses/geist-OFL.txt` |
+| Next.js transitive sharp/native libvips packages | Apache-2.0 for sharp; LGPL-3.0-or-later for libvips, with combined notices for native binaries; retain their distributed license notices |
+| Transitive caniuse-lite browser-support data | CC-BY-4.0; retain its attribution/license metadata |
+
+All listed resources are free/open-source and usable under their stated terms.
+Retain dependency/font license notices when distributing builds. The application
+is an assignment clone, not an official Typeform product.
+
+## Deployment
+
+The code supports separate frontend and backend origins; deployment has not been
+performed by this phase. A public GitHub repository and a hosted working URL must
+still be provided for submission. No hosting provider or paid plan is required by
+the code.
+
+### Frontend
+
+Use a Next.js-capable host, for example Vercel, with project root `frontend/`,
+Node 24, install command `npm ci`, and build command `npm run build`. Set
+`NEXT_PUBLIC_API_URL=https://your-api.example` before building. For a regular Node
+host, run `npm run start` after the build. Use HTTPS for both services.
+[Public environment variables are included at build time](https://vercel.com/academy/nextjs-foundations/env-and-security).
+
+### Backend and durable SQLite
+
+Use a Python 3.12 host with uv and **a persistent local disk/volume**, such as a
+single-instance VM, container host, or a service with a persistent disk. Set the
+service root to `backend/` and install locked runtime dependencies with
+`uv sync --frozen --no-dev`.
+
+Configure:
+
+```dotenv
+APP_NAME=Typeform Clone API
+APP_ENV=production
+FRONTEND_ORIGIN=https://your-frontend.example
+DATABASE_URL=sqlite:////var/data/typeform_clone.db
+```
+
+Mount a persistent disk at `/var/data`, ensure it is writable by the service, and
+run migrations **where that mounted volume is available**:
+
+```sh
+uv run --frozen --no-dev alembic upgrade head
+uv run --frozen --no-dev python -m app.db.seed
+uv run --frozen --no-dev uvicorn app.main:app --host 0.0.0.0 --port "$PORT"
+```
+
+These are POSIX shell deployment commands; use the port assigned by the host
+(or 8000 for a fixed-port host). On a host where the disk is only available at
+runtime, chain migration/seed/start with `&&` in the service start command so a
+failed migration prevents startup. Do not migrate the mounted database in an
+isolated build step. Do not use `--reload` in production. Configure `/health` as
+the health-check path, and keep one instance/worker for the assignment deployment.
+
+Local SQLite persists normally. Many free services provide ephemeral filesystems:
+restarts or deploys may destroy a database written there. A durable hosted SQLite
+installation **requires** a persistent disk, plus SQLite-aware backups outside
+that disk. Render is one possible backend host, but its documentation says disks
+are attached to paid services; its default filesystem is ephemeral. See
+[Render's disk documentation](https://render.com/docs/disks) before choosing a plan.
+Other providers or a VM with durable storage are equally valid. SQLite is retained
+as required by the assignment.
+
+After hosting, verify CORS using the exact frontend origin, both sample public
+links, a new submission, Results, and persistence across backend restart/redeploy.
+Record the real repository and demo URLs before submission; no fake demo link is
+included here.

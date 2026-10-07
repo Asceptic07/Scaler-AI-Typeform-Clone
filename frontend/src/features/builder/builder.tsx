@@ -9,13 +9,15 @@ import {
   BarChart3,
   Check,
   ChevronDown,
+  ChevronRight,
+  CircleHelp,
   Copy,
   Eye,
-  FileText,
   Link2,
   Loader2,
   LockKeyhole,
   Monitor,
+  PanelsTopLeft,
   Plus,
   Send,
   Smartphone,
@@ -39,6 +41,7 @@ import { ApiError, errorMessage } from "@/lib/api/client";
 import { formsApi } from "@/lib/api/forms";
 import { questionsApi } from "@/lib/api/questions";
 import type { Form, Question, QuestionInput, QuestionType } from "@/types/form";
+import "./builder-shell.css";
 
 function payload(question: Question): QuestionInput {
   return {
@@ -325,9 +328,10 @@ export function Builder({ formId }: { formId: number }) {
               if (await saveCurrent()) router.push("/");
             }}
           >
-            <ArrowLeft size={19} />
+            <PanelsTopLeft size={17} />
+            <span>Forms</span>
           </Link>
-          <span className="builder-divider" />
+          <ChevronRight className="builder-crumb-chevron" size={14} />
           <button
             className="builder-title"
             disabled={busy}
@@ -336,7 +340,9 @@ export function Builder({ formId }: { formId: number }) {
             {form.title}
             <ChevronDown size={14} />
           </button>
-          <Status status={form.status} />
+          <span className="builder-status">
+            <Status status={form.status} />
+          </span>
         </div>
         <div className="builder-top-actions">
           <span
@@ -357,21 +363,47 @@ export function Builder({ formId }: { formId: number }) {
             ) : (
               <>
                 <Check size={13} />
-                All changes saved
+                Saved
               </>
             )}
           </span>
-          <Button variant="secondary" onClick={() => setDialog("preview")}>
-            <Eye size={16} />
-            Preview
-          </Button>
+          <button
+            className="builder-header-action"
+            aria-label="Open results"
+            title="Results"
+            onClick={async () => {
+              if (await saveCurrent()) router.push(`/forms/${form.id}/results`);
+            }}
+          >
+            <BarChart3 size={16} /> <span>Results</span>
+          </button>
+          <button
+            className="icon-button builder-utility"
+            aria-label="Help"
+            title="Help"
+            onClick={() =>
+              toast.info(
+                "Add content to create a question. Select one to edit its settings.",
+              )
+            }
+          >
+            <CircleHelp size={17} />
+          </button>
           {form.status === "published" && (
-            <Button variant="secondary" onClick={() => setDialog("share")}>
+            <Button
+              variant="secondary"
+              className="builder-compact-button"
+              onClick={() => setDialog("share")}
+            >
               <Link2 size={16} />
               Share
             </Button>
           )}
-          <Button disabled={busy} onClick={() => void publication()}>
+          <Button
+            disabled={busy}
+            className="builder-compact-button builder-publish"
+            onClick={() => void publication()}
+          >
             {form.status === "published" ? (
               "Unpublish"
             ) : (
@@ -383,25 +415,39 @@ export function Builder({ formId }: { formId: number }) {
           </Button>
         </div>
       </header>
-      <div className="builder-subnav">
-        <span className="builder-content-tab">
-          <FileText size={15} />
-          Content
-        </span>
-        <Link
-          className="builder-nav-link"
-          href={`/forms/${form.id}/results`}
-          onClick={async (event) => {
-            event.preventDefault();
-            if (await saveCurrent()) router.push(`/forms/${form.id}/results`);
-          }}
-        >
-          <BarChart3 size={15} />
-          Results
-        </Link>
-        <span className="builder-subnav-hint">
-          Build a conversation, one question at a time.
-        </span>
+      <div className="builder-toolbar-row">
+        <div className="builder-toolbar" role="toolbar" aria-label="Form tools">
+          <Button
+            disabled={locked || busy}
+            className="builder-add-button"
+            onClick={() => setDialog("add")}
+          >
+            <Plus size={17} /> Add content
+          </Button>
+          <span className="builder-tool-separator" />
+          <button
+            className="builder-tool-button"
+            onClick={() => setDialog("preview")}
+          >
+            <Eye size={17} /> Preview
+          </button>
+          <div className="builder-device-controls segmented" aria-label="Canvas viewport">
+            <button
+              aria-label="Desktop canvas"
+              aria-pressed={!mobileCanvas}
+              onClick={() => setMobileCanvas(false)}
+            >
+              <Monitor size={15} />
+            </button>
+            <button
+              aria-label="Mobile canvas"
+              aria-pressed={mobileCanvas}
+              onClick={() => setMobileCanvas(true)}
+            >
+              <Smartphone size={15} />
+            </button>
+          </div>
+        </div>
       </div>
       {locked && (
         <div className="lock-banner">
@@ -436,33 +482,9 @@ export function Builder({ formId }: { formId: number }) {
           locked={locked || busy}
           onSelect={(question) => void selectQuestion(question)}
           onDelete={setDeleting}
-          onAdd={() => setDialog("add")}
           onReorder={(active, over) => void reorder(active, over)}
         />
         <main className="builder-canvas">
-          <div className="canvas-toolbar">
-            <span>
-              {draft
-                ? `Question ${draft.position + 1} of ${form.questions.length}`
-                : "Your blank canvas"}
-            </span>
-            <div className="segmented">
-              <button
-                aria-label="Desktop canvas"
-                aria-pressed={!mobileCanvas}
-                onClick={() => setMobileCanvas(false)}
-              >
-                <Monitor size={16} />
-              </button>
-              <button
-                aria-label="Mobile canvas"
-                aria-pressed={mobileCanvas}
-                onClick={() => setMobileCanvas(true)}
-              >
-                <Smartphone size={16} />
-              </button>
-            </div>
-          </div>
           <div
             className={`canvas-frame ${mobileCanvas ? "canvas-mobile" : ""}`}
           >
@@ -481,49 +503,40 @@ export function Builder({ formId }: { formId: number }) {
                 }}
               />
             ) : (
-              <div className="builder-empty">
-                <div className="empty-illustration">
-                  <FileText size={42} strokeWidth={1.2} />
-                  <span>?</span>
-                </div>
-                <h1>Start with a good question.</h1>
-                <p>
-                  A name, an opinion, a little feedback.
-                  <br />
-                  What would you like to know?
-                </p>
-                <Button
-                  disabled={locked || busy}
-                  onClick={() => setDialog("add")}
-                >
-                  <Plus size={17} />
-                  Add your first question
-                </Button>
-              </div>
+              <div className="builder-empty" aria-label="Empty form canvas" />
             )}
           </div>
-          <div className="canvas-footer">
-            <span>Make it feel like a conversation.</span>
-            <span>
-              {locked ? "Read-only" : "Click on the question to edit"}
-            </span>
-          </div>
+          {draft && (
+            <div className="canvas-footer">
+              <span>{locked ? "Read-only" : "Changes save automatically"}</span>
+              <span>
+                {saving
+                  ? "Saving…"
+                  : saveError
+                    ? "Not saved"
+                    : dirty
+                      ? "Unsaved changes"
+                      : "Saved"}
+              </span>
+            </div>
+          )}
         </main>
-        {draft ? (
-          <QuestionSettings
-            question={draft}
-            locked={locked}
-            busy={busy}
-            onChange={acceptDraft}
-            onSave={() => void saveCurrent()}
-            onDelete={() => setDeleting(draft)}
-          />
-        ) : (
-          <aside className="question-settings empty-settings">
-            <h3>Make it yours</h3>
-            <p>Select a question to see its settings here.</p>
-          </aside>
-        )}
+        <div className="builder-context-column">
+          {draft ? (
+            <QuestionSettings
+              question={draft}
+              locked={locked}
+              busy={busy}
+              onChange={acceptDraft}
+              onSave={() => void saveCurrent()}
+            />
+          ) : (
+            <aside
+              className="question-settings empty-settings"
+              aria-label="Question settings"
+            />
+          )}
+        </div>
       </div>
       {dialog === "add" && (
         <QuestionPicker

@@ -195,9 +195,7 @@ export function AnswerControl({
             </>
           ) : (
             <>
-              <span className="choice-key" aria-hidden="true">
-                {option.shortcut}
-              </span>
+              <span className="choice-key" aria-hidden="true">{option.shortcut}</span>
               <span className="public-choice-label">{option.label}</span>
               {option.value === value && <Check size={20} aria-hidden="true" />}
             </>

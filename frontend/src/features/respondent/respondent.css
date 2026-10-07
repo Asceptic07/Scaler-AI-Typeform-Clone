@@ -24,7 +24,7 @@
 }
 .public-header-hint {
   font-size: 10px;
-  color: #76796f;
+  color: #6b7063;
 }
 .public-progress {
   position: fixed;
@@ -273,7 +273,7 @@
   white-space: nowrap;
 }
 .public-navigation > span > span {
-  color: #78806e;
+  color: #6b7063;
   margin: 0 2px;
 }
 .public-navigation > div {

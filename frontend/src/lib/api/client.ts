@@ -24,7 +24,9 @@ export async function request<T>(
         ...(options.body ? { "Content-Type": "application/json" } : {}),
         ...options.headers,
       },
-      signal: options.signal ?? AbortSignal.timeout(10000),
+      signal: options.signal
+        ? AbortSignal.any([options.signal, AbortSignal.timeout(10000)])
+        : AbortSignal.timeout(10000),
     });
   } catch (error) {
     if (options.signal?.aborted) throw error;

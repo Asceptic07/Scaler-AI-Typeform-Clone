@@ -15,8 +15,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { GripVertical, Trash2 } from "lucide-react";
 import { typeInfo } from "@/features/builder/question-types";
 import type { Question } from "@/types/form";
 
@@ -89,7 +88,6 @@ export function QuestionList({
   locked,
   onSelect,
   onDelete,
-  onAdd,
   onReorder,
 }: {
   questions: Question[];
@@ -97,7 +95,6 @@ export function QuestionList({
   locked: boolean;
   onSelect: (question: Question) => void;
   onDelete: (question: Question) => void;
-  onAdd: () => void;
   onReorder: (active: number, over: number) => void;
 }) {
   const sensors = useSensors(
@@ -112,55 +109,36 @@ export function QuestionList({
   }
   return (
     <aside className="question-rail">
-      <div className="question-rail-heading">
-        <span>Content</span>
-        <span>{questions.length}</span>
-      </div>
-      <Button
-        variant="secondary"
-        className="add-content"
-        disabled={locked}
-        onClick={onAdd}
-      >
-        <Plus size={16} />
-        Add question
-      </Button>
-      <DndContext
-        id="builder-questions"
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={dragEnd}
-      >
-        <SortableContext
-          items={questions.map((q) => q.id)}
-          strategy={verticalListSortingStrategy}
+      <section className="rail-pages" aria-label="Form pages">
+        <div className="question-rail-heading">
+          <span>Pages</span>
+          <span>{questions.length}</span>
+        </div>
+        <DndContext
+          id="builder-questions"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={dragEnd}
         >
-          <ol className="question-list">
-            {questions.map((question) => (
-              <QuestionRow
-                key={question.id}
-                question={question}
-                selected={question.id === selectedId}
-                locked={locked}
-                onSelect={() => onSelect(question)}
-                onDelete={() => onDelete(question)}
-              />
-            ))}
-          </ol>
-        </SortableContext>
-      </DndContext>
-      {questions.length === 0 && (
-        <p className="rail-empty">
-          Your questions will appear here.
-          <br />
-          Add your first one to get started.
-        </p>
-      )}
-      <div className="rail-footer">
-        {locked
-          ? "Questions are read-only"
-          : "Drag to reorder · Changes save automatically"}
-      </div>
+          <SortableContext
+            items={questions.map((q) => q.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <ol className="question-list" aria-label="Questions">
+              {questions.map((question) => (
+                <QuestionRow
+                  key={question.id}
+                  question={question}
+                  selected={question.id === selectedId}
+                  locked={locked}
+                  onSelect={() => onSelect(question)}
+                  onDelete={() => onDelete(question)}
+                />
+              ))}
+            </ol>
+          </SortableContext>
+        </DndContext>
+      </section>
     </aside>
   );
 }
