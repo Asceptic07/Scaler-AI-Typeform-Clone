@@ -20,6 +20,7 @@ import {
   PanelsTopLeft,
   Plus,
   Send,
+  Settings2,
   Smartphone,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -27,6 +28,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import { Status } from "@/components/ui/status";
 import { Preview } from "@/features/builder/preview";
+import { FormSettings } from "@/features/builder/form-settings";
 import { QuestionEditor } from "@/features/builder/question-editor";
 import { QuestionList } from "@/features/builder/question-list";
 import { QuestionPicker } from "@/features/builder/question-picker";
@@ -74,7 +76,7 @@ export function Builder({ formId }: { formId: number }) {
   const pending = useRef<Promise<boolean> | null>(null);
   const [saveError, setSaveError] = useState("");
   const [dialog, setDialog] = useState<
-    "add" | "rename" | "share" | "preview" | null
+    "add" | "rename" | "share" | "preview" | "settings" | null
   >(null);
   const [deleting, setDeleting] = useState<Question | null>(null);
   const [mobileCanvas, setMobileCanvas] = useState(false);
@@ -431,6 +433,17 @@ export function Builder({ formId }: { formId: number }) {
           >
             <Eye size={17} /> Preview
           </button>
+          <button
+            type="button"
+            className="builder-tool-icon"
+            aria-label="Settings"
+            title="Settings"
+            aria-haspopup="dialog"
+            aria-expanded={dialog === "settings"}
+            onClick={() => setDialog("settings")}
+          >
+            <Settings2 size={17} aria-hidden="true" />
+          </button>
           <div className="builder-device-controls segmented" aria-label="Canvas viewport">
             <button
               aria-label="Desktop canvas"
@@ -564,6 +577,9 @@ export function Builder({ formId }: { formId: number }) {
       )}
       {dialog === "share" && (
         <ShareDialog form={form} onClose={() => setDialog(null)} />
+      )}
+      {dialog === "settings" && (
+        <FormSettings onClose={() => setDialog(null)} />
       )}
       {dialog === "preview" && (
         <Preview
