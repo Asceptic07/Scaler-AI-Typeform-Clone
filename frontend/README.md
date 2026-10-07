@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Scaler Typeform Clone frontend
 
-## Getting Started
+The frontend for the Scaler Typeform Clone uses Next.js, TypeScript, and the
+App Router under `src/app/`.
 
-First, run the development server:
+## Local setup
 
-```bash
+Run from `frontend/`:
+
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. Run the backend using the root setup instructions.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`NEXT_PUBLIC_API_URL` specifies the backend base URL, defaulting to
+`http://localhost:8000`. Copy `.env.example` to `.env.local` for overrides.
+Set this variable before building for production; changes require a rebuild.
 
-## Learn More
+## Production checks
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+npm run lint
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Main routes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Route | Purpose |
+| --- | --- |
+| `/` | Creator workspace |
+| `/forms/[formId]` | Form builder |
+| `/forms/[formId]/results` | Responses and statistics |
+| `/forms/[formId]/results/[responseId]` | Individual response |
+| `/to/[slug]` | Public respondent flow |
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [the full project README](../README.md) for backend setup, architecture,
+database schema, APIs, seed data, assumptions, licenses, and deployment notes.

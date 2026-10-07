@@ -5,6 +5,19 @@ pages. Checks use the existing repository, Chrome, the running FastAPI API, and
 real SQLite persistence. Browser tests use isolated scratch forms, removed after
 verification; existing sample forms and responses are preserved.
 
+## Latest verification and submission readiness
+
+The latest completed end-to-end QA recorded below passed backend Ruff, all
+**55 backend tests**, Alembic check, frontend lint, the frontend production build,
+and manual end-to-end browser QA. These are prior QA results; backend and browser
+checks are not rerun for the documentation/empty-preview cleanup. Frontend lint
+and the production build passed again for this cleanup.
+
+The final read-only source audit verified the public repository at
+[Asceptic07/Scaler-AI-Typeform-Clone](https://github.com/Asceptic07/Scaler-AI-Typeform-Clone)
+and a clean working tree at commit `30f429c`. It did not rerun runtime checks or
+certify exact Typeform visual fidelity. **Hosted demo: pending deployment.**
+
 ## Mandatory application requirements
 
 | Requirement | Result | Verification |
@@ -62,7 +75,8 @@ verification; existing sample forms and responses are preserved.
 | Modals | PASS | Native dialogs, focus containment, Escape, focus return |
 | Inline editing | PASS | Question/title/help-text/options save through API |
 | Notifications/toasts | PASS | Management, share, mutation failure, save feedback |
-| Optional presentation settings | N/A | Removed; no theme or display-settings API/model remains |
+| Theme settings placeholder | PASS | Builder Settings dialog: Theme: Coming soon; non-interactive, no settings API or persistence |
+| Thank-you screen settings placeholder | PASS | Builder Settings dialog: Thank-you screen: Coming soon; non-interactive, no settings API or persistence |
 | At least two seeded published forms | PASS | Fresh database produces two published samples |
 | Existing mixed seeded responses | PASS | Six responses covering all eight question types |
 | README/setup/stack/architecture/schema/API | PASS | Root README and verified commands |
@@ -72,11 +86,11 @@ verification; existing sample forms and responses are preserved.
 
 | Deliverable | Result | Remaining action |
 | --- | --- | --- |
-| Local source with frontend/ and backend/ | PASS | Changes are intentionally uncommitted for review |
+| Local source with frontend/ and backend/ | PASS | Source is committed; working tree was clean at the latest read-only verification |
 | Documentation | PASS | README and this audit |
-| Public GitHub repository URL | FAIL | No Git remote is configured; publish the reviewed repository |
-| Hosted working demo URL | FAIL | No deployment performed; configure durable SQLite hosting and deploy |
-| Submit both URLs by communicated deadline | FAIL | Requires the two real URLs and the external submission step |
+| Public GitHub repository URL | PASS | Public repository verified: https://github.com/Asceptic07/Scaler-AI-Typeform-Clone |
+| Hosted working demo URL | PENDING | Pending deployment; configure durable SQLite hosting and verify the hosted application |
+| Submit both URLs by communicated deadline | PENDING | Repository URL exists; requires the hosted demo URL and external submission step |
 
 These are external submission prerequisites, not completed deployments. The local
 application and preparation are verified; this audit does **not** claim the entire

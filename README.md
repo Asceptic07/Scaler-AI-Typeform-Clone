@@ -296,10 +296,13 @@ is an assignment clone, not an official Typeform product.
 
 ## Deployment
 
-The code supports separate frontend and backend origins; deployment has not been
-performed by this phase. A public GitHub repository and a hosted working URL must
-still be provided for submission. No hosting provider or paid plan is required by
-the code.
+Public repository:
+[Asceptic07/Scaler-AI-Typeform-Clone](https://github.com/Asceptic07/Scaler-AI-Typeform-Clone).
+**Hosted demo: Pending deployment.**
+
+The code supports separate frontend and backend origins. Deployment remains
+pending; submission requires both the repository URL and a verified hosted demo
+URL. No hosting provider or paid plan is required by the code.
 
 ### Frontend
 
@@ -352,5 +355,4 @@ as required by the assignment.
 
 After hosting, verify CORS using the exact frontend origin, both sample public
 links, a new submission, Results, and persistence across backend restart/redeploy.
-Record the real repository and demo URLs before submission; no fake demo link is
-included here.
+Submit the public repository URL above and the verified demo URL after deployment.

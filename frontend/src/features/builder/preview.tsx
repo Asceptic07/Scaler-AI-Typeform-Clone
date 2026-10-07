@@ -66,7 +66,20 @@ export function Preview({
           </div>
         )}
       </div>
-      <div className="preview-progress" role="progressbar" aria-valuenow={index + 1} aria-valuemax={form.questions.length}><span style={{ width: `${form.questions.length ? ((index + 1) / form.questions.length) * 100 : 0}%` }} /></div>
+      {form.questions.length > 0 && (
+        <div
+          className="preview-progress"
+          role="progressbar"
+          aria-label="Preview question progress"
+          aria-valuemin={0}
+          aria-valuenow={index + 1}
+          aria-valuemax={form.questions.length}
+        >
+          <span
+            style={{ width: `${((index + 1) / form.questions.length) * 100}%` }}
+          />
+        </div>
+      )}
       <div className="preview-navigation">
         <span>Preview only · No answers are submitted</span>
         <div>
