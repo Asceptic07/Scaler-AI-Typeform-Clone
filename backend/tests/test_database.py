@@ -101,4 +101,5 @@ def test_migration_downgrade_upgrade_round_trip(db_factory):
             "question_options",
             "responses",
             "answers",
+            "logic_rules",
         }

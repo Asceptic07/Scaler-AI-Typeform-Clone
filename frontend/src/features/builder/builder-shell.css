@@ -10,6 +10,29 @@
   flex: 1 1 0;
 }
 
+.question-logic {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 12px;
+}
+.logic-rules {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.logic-rule {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) 32px;
+  align-items: end;
+  gap: 10px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.logic-rule .input {
+  margin-top: 6px;
+  font-size: 12px;
+}
 .builder-app .builder-identity > .icon-button {
   width: auto;
   gap: 8px;

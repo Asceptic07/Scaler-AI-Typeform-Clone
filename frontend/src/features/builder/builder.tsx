@@ -29,6 +29,7 @@ import { ErrorState, Skeleton } from "@/components/ui/feedback";
 import { Status } from "@/components/ui/status";
 import { Preview } from "@/features/builder/preview";
 import { FormSettings } from "@/features/builder/form-settings";
+import { LogicEditor } from "@/features/builder/logic-editor";
 import { QuestionEditor } from "@/features/builder/question-editor";
 import { QuestionList } from "@/features/builder/question-list";
 import { QuestionPicker } from "@/features/builder/question-picker";
@@ -76,7 +77,7 @@ export function Builder({ formId }: { formId: number }) {
   const pending = useRef<Promise<boolean> | null>(null);
   const [saveError, setSaveError] = useState("");
   const [dialog, setDialog] = useState<
-    "add" | "rename" | "share" | "preview" | "settings" | null
+    "add" | "rename" | "share" | "preview" | "settings" | "logic" | null
   >(null);
   const [deleting, setDeleting] = useState<Question | null>(null);
   const [mobileCanvas, setMobileCanvas] = useState(false);
@@ -239,7 +240,10 @@ export function Builder({ formId }: { formId: number }) {
       );
     } catch (error) {
       acceptForm(previous);
-      toast.error(errorMessage(error));
+      toast.error(
+        error instanceof ApiError && typeof error.details === "string"
+          ? error.details : errorMessage(error),
+      );
     } finally {
       setBusy(false);
     }
@@ -542,6 +546,9 @@ export function Builder({ formId }: { formId: number }) {
               busy={busy}
               onChange={acceptDraft}
               onSave={() => void saveCurrent()}
+              onLogic={() => {
+                void (async () => { if (await saveCurrent()) setDialog("logic"); })();
+              }}
             />
           ) : (
             <aside
@@ -551,6 +558,19 @@ export function Builder({ formId }: { formId: number }) {
           )}
         </div>
       </div>
+      {dialog === "logic" && draft && (
+        <LogicEditor question={draft} questions={form.questions} onClose={() => setDialog(null)}
+          onSave={async (rules) => {
+            const updated = await questionsApi.saveLogic(formId, draft.id, rules);
+            acceptForm({
+              ...form,
+              questions: form.questions.map((item) => item.id === updated.id ? updated : item),
+            });
+            acceptDraft(updated);
+            setDialog(null);
+            toast.success("Logic saved");
+          }} />
+      )}
       {dialog === "add" && (
         <QuestionPicker
           busy={busy}
@@ -614,6 +634,7 @@ export function Builder({ formId }: { formId: number }) {
                   acceptDraft({
                     ...draftRef.current,
                     position: active.position,
+                    logic_rules: active.logic_rules,
                   });
               }
               setDeleting(null);

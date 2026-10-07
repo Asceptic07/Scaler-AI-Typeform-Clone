@@ -18,6 +18,7 @@ from app.models.types import QuestionType
 
 if TYPE_CHECKING:
     from app.models.form import Form
+    from app.models.logic_rule import LogicRule
 
 
 class Question(Base):
@@ -53,6 +54,12 @@ class Question(Base):
         onupdate=lambda: datetime.now(UTC),
     )
     form: Mapped["Form"] = relationship(back_populates="questions")
+    logic_rules: Mapped[list["LogicRule"]] = relationship(
+        foreign_keys="LogicRule.source_question_id",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+        order_by="LogicRule.id",
+    )
     options: Mapped[list["QuestionOption"]] = relationship(
         back_populates="question",
         cascade="all, delete-orphan",

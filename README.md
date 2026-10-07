@@ -14,6 +14,9 @@ conversational public experience, and review persisted responses and statistics.
 - **Eight question types:** short text, long text, multiple choice, dropdown,
   email, number, yes/no, and rating.
 - **Publishing:** stable public share links, clipboard feedback, and unpublishing.
+- **Basic logic jumps (bonus):** equality rules on multiple choice, dropdown,
+  yes/no, and rating; jump to a later question or End form. Configure rules in
+  the question settings with explicit Save logic.
 - **Respondent experience:** full-screen, one question at a time; restrained
   transitions, progress, keyboard navigation, client/server validation,
   submission to SQLite, and a confirmed thank-you screen. No login is needed.
@@ -23,7 +26,7 @@ conversational public experience, and review persisted responses and statistics.
 - **Feedback:** loading, empty, and error states; accessible dialogs, menus, tabs,
   visible keyboard focus, and reduced-motion support.
 - The builder keeps its primary workflow focused on question editing, preview,
-  publishing, sharing, and results. Theme customization, branching, and external
+  publishing, sharing, and results. Theme customization, advanced branching, and external
   integrations are outside the assignment scope.
 
 ## Tech stack
@@ -149,6 +152,7 @@ working form definition and never submits answers.
 | `question_options` | Question FK, label, position, creation timestamp; unique `(question_id, position)` |
 | `responses` | Form FK, UTC submission timestamp; index on `(form_id, submitted_at, id)` for newest-first retrieval |
 | `answers` | Response/question FKs, optional option FK, text/number/boolean values, creation timestamp; unique `(response_id, question_id)` and exactly one stored value |
+| `logic_rules` | Source/target question FKs, option FK or boolean/rating condition, timestamp; exactly one condition and unique conditions per source; cascading deletion |
 
 ```mermaid
 erDiagram
@@ -181,6 +185,7 @@ Full schemas and interactive examples are available at `/docs`.
 | POST | `/api/forms/{id}/questions` | Append a question |
 | PATCH / DELETE | `/api/forms/{id}/questions/{questionId}` | Update / remove question |
 | PUT | `/api/forms/{id}/questions/reorder` | Persist the complete question order |
+| PUT | `/api/forms/{id}/questions/{questionId}/logic` | Atomically replace equality rules; `target_question_id: null` means End form; existing edit locks apply |
 | GET | `/api/public/forms/{slug}` | Published public definition |
 | POST | `/api/public/forms/{slug}/responses` | Validate and persist a whole submission |
 | GET | `/api/forms/{id}/responses` | Newest-first submissions including answers |
@@ -208,7 +213,7 @@ uv run python -m app.db.seed
 
 For future schema changes, import models through `app.models`, then run
 `uv run alembic revision --autogenerate -m "describe change"`. Review the generated
-migration before applying it. Current schema head: `e42a53e64a4a`.
+migration before applying it. Current schema head: `b7c91d2e4a60`.
 
 The idempotent seed creates two published forms, each with three responses:
 `sample-product-feedback` and `sample-event-survey`. Across them are all eight
@@ -224,6 +229,7 @@ cd frontend
 npm run lint
 npm run build
 npm audit --omit=dev
+node --test tests/logic.test.mjs
 ```
 
 Backend:
@@ -236,7 +242,7 @@ uv run alembic current
 uv run alembic check
 ```
 
-The 55 backend tests migrate isolated temporary SQLite databases and do not use
+The 107 backend tests migrate isolated temporary SQLite databases and do not use
 the developer database. Coverage includes CRUD, publication/history protection,
 validation, all answer types, constraints/cascades, seed idempotence, transactional
 ordering, concurrency, and migration downgrade/upgrade. Browser QA covers creator
@@ -256,8 +262,17 @@ layouts; see [the requirement audit](docs/QA.md).
   they are not stored in localStorage. Failed submissions retain answers on screen.
 - Response listing returns all submissions without pagination. SQLite serializes
   writers; deployment uses one service instance with one local durable database.
-- Theme customization, branching, integrations, CSV export, file upload, partial
-  tracking, authentication, and dark mode are outside the current scope.
+- Logic is intentionally basic: equality on the four supported source types,
+  forward-only targets and End form. Unmatched answers continue sequentially.
+  Back follows visited questions; changing an earlier answer clears future values.
+  The server resolves the path independently and ignores unreachable answers,
+  including skipped required questions. Results/statistics/CSV use stored answers
+  only. Reorders that would make a rule backward are rejected. Type changes clear
+  source rules; deleting an option or target cascades its rules. Preview remains a
+  sequential visual preview. This is not a full Typeform logic engine.
+- CSV export and application dark mode are also implemented bonuses. Custom form
+  themes, integrations, file upload, partial tracking and real authentication remain
+  outside the current scope; the Theme/Thank-you settings placeholders remain.
 - The installed Starlette TestClient/httpx adapter emits a deprecation warning.
   Development-only npm advisories are separate from the production dependency audit.
 - Browser QA uses Chrome with emulated viewport sizes; physical mobile-device and

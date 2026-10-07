@@ -4,6 +4,7 @@ from pydantic import Field, StrictInt, computed_field, model_validator
 
 from app.models.types import CHOICE_TYPES, QuestionType
 from app.schemas.common import OptionLabel, QuestionTitle, ReadSchema, RequestSchema
+from app.schemas.logic import LogicRuleRead
 
 
 class OptionCreate(RequestSchema):
@@ -58,6 +59,7 @@ class QuestionRead(ReadSchema):
     required: bool
     position: int
     options: list[OptionRead]
+    logic_rules: list[LogicRuleRead]
 
     @computed_field
     @property

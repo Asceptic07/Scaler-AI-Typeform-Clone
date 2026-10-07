@@ -3,6 +3,7 @@ from fastapi import APIRouter, Response
 from app.api.dependencies import ReadDB, WriteDB
 from app.models.types import FormStatus
 from app.schemas.form import FormCreate, FormDetail, FormSummary, FormUpdate
+from app.schemas.logic import LogicReplace
 from app.schemas.question import (
     QuestionCreate,
     QuestionRead,
@@ -15,6 +16,7 @@ from app.services import form_service as forms
 from app.services import question_service as questions
 from app.services import response_service as responses
 from app.services.csv_export_service import export_responses
+from app.services.logic_service import replace_rules
 from app.services.statistics_service import get_statistics
 
 router = APIRouter(prefix="/api/forms", tags=["forms"])
@@ -102,6 +104,23 @@ def create_question(form_id: int, data: QuestionCreate, db: WriteDB) -> Question
     return QuestionRead.model_validate(
         questions.add_question(db, forms.get_form(db, form_id), data)
     )
+
+
+@router.put(
+    "/{form_id}/questions/{question_id}/logic",
+    response_model=QuestionRead,
+    tags=["questions"],
+)
+def save_logic(
+    form_id: int, question_id: int, data: LogicReplace, db: WriteDB
+) -> QuestionRead:
+    form = forms.get_form(db, form_id)
+    source = questions.get_question(form, question_id)
+    questions.ensure_editable(db, form)
+    replace_rules(db, form, source, data.rules)
+    forms.touch(form)
+    db.flush()
+    return QuestionRead.model_validate(source)
 
 
 @router.put(

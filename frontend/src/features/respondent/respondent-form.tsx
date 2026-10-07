@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, useReducedMotion } from "framer-motion";
 import { AlertCircle } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
+import { pruneFutureAnswers, reachableQuestions, resolveNextQuestion } from "@/lib/logic";
 import {
   getPublicForm,
   PublicApiError,
@@ -32,6 +33,7 @@ export function RespondentForm({ slug }: { slug: string }) {
   const [reload, setReload] = useState(0);
   const [cursor, setCursor] = useState({ index: 0, direction: 1 });
   const indexRef = useRef(0);
+  const history = useRef<number[]>([0]);
   const [answers, setAnswers] = useState<Answers>({});
   const answersRef = useRef<Answers>({});
   const [errors, setErrors] = useState<Record<number, string>>({});
@@ -84,18 +86,25 @@ export function RespondentForm({ slug }: { slug: string }) {
     const id = form.questions[indexRef.current].id;
     // An exiting screen must never write into the next question's answer.
     if (questionId !== undefined && questionId !== id) return;
+    if (!Object.is(answersRef.current[id], value)) {
+      // A changed earlier answer invalidates every future branch's working values.
+      answersRef.current = pruneFutureAnswers(form.questions, indexRef.current, answersRef.current);
+    }
     answersRef.current = { ...answersRef.current, [id]: value };
     setAnswers(answersRef.current);
     setErrors((previous) => {
       const next = { ...previous };
       delete next[id];
+      for (const item of form.questions.slice(indexRef.current + 1)) delete next[item.id];
       return next;
     });
     setSubmissionError("");
   }
   function previous() {
-    if (!submissionPending.current && !transitioning.current)
-      moveTo(indexRef.current - 1);
+    if (!submissionPending.current && !transitioning.current && history.current.length > 1) {
+      history.current.pop();
+      moveTo(history.current[history.current.length - 1]);
+    }
   }
   async function next() {
     if (
@@ -113,21 +122,26 @@ export function RespondentForm({ slug }: { slug: string }) {
       focusAnswer();
       return;
     }
-    if (index < form.questions.length - 1) {
-      moveTo(index + 1);
+    const target = resolveNextQuestion(question, answersRef.current[question.id], form.questions);
+    if (target !== null) {
+      history.current.push(target);
+      moveTo(target);
       return;
     }
-    // Recheck the whole working response before creating one atomic submission.
-    const invalid = form.questions.findIndex(
+    // Recheck only the resolved path; required skipped questions do not block it.
+    const path = reachableQuestions(form.questions, answersRef.current);
+    const invalid = path.findIndex(
       (item) => validateAnswer(item, answersRef.current[item.id]) !== null,
     );
     if (invalid >= 0) {
-      const item = form.questions[invalid];
+      const item = path[invalid];
       setErrors((previous) => ({
         ...previous,
         [item.id]: validateAnswer(item, answersRef.current[item.id])!,
       }));
-      moveTo(invalid);
+      const position = form.questions.findIndex((question) => question.id === item.id);
+      history.current = path.slice(0, invalid + 1).map((question) => form.questions.indexOf(question));
+      moveTo(position);
       return;
     }
     submissionPending.current = true;
@@ -136,7 +150,7 @@ export function RespondentForm({ slug }: { slug: string }) {
     try {
       const result = await submitPublicResponse(
         slug,
-        createPayload(form, answersRef.current),
+        createPayload({ ...form, questions: path }, answersRef.current),
       );
       confirmed.current = true;
       setReceipt(result);
@@ -151,6 +165,8 @@ export function RespondentForm({ slug }: { slug: string }) {
         (question) => question.id === questionId,
       );
       if (target >= 0 && questionId !== undefined) {
+        const visited = path.findIndex((question) => question.id === questionId);
+        if (visited >= 0) history.current = path.slice(0, visited + 1).map((question) => form.questions.indexOf(question));
         setErrors((previous) => ({ ...previous, [questionId]: message }));
         moveTo(target);
       } else {
@@ -177,6 +193,7 @@ export function RespondentForm({ slug }: { slug: string }) {
     return <ThankYou title={form.title} reducedMotion={reducedMotion} />;
   if (!form.questions.length) return <PublicState state="empty" />;
   const question = form.questions[cursor.index];
+  const last = resolveNextQuestion(question, answers[question.id], form.questions) === null;
   return (
     <div
       className="respondent-app"
@@ -185,7 +202,7 @@ export function RespondentForm({ slug }: { slug: string }) {
           next: () => void next(),
           previous,
           choose,
-          last: cursor.index === form.questions.length - 1,
+          last,
           disabled: submitting || navigating,
         })
       }
@@ -210,7 +227,7 @@ export function RespondentForm({ slug }: { slug: string }) {
             index={cursor.index}
             value={answers[question.id]}
             error={errors[question.id]}
-            last={cursor.index === form.questions.length - 1}
+            last={last}
             submitting={submitting}
             navigating={navigating}
             direction={cursor.direction}
@@ -229,6 +246,7 @@ export function RespondentForm({ slug }: { slug: string }) {
       <Navigation
         current={cursor.index}
         total={form.questions.length}
+        last={last}
         disabled={submitting || navigating}
         onPrevious={previous}
         onNext={() => void next()}
