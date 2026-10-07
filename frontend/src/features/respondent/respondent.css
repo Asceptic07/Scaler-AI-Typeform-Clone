@@ -1,0 +1,526 @@
+.respondent-app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: #fffefb;
+  color: #252923;
+  --answer: #395e80;
+}
+.public-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 28px 40px;
+  min-height: 79px;
+  color: #73766e;
+  font-size: 12px;
+}
+.public-header > span:first-child {
+  max-width: 55%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.public-header-hint {
+  font-size: 10px;
+  color: #76796f;
+}
+.public-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: #e7ece7;
+  z-index: 5;
+}
+.public-progress > div {
+  width: 100%;
+  height: 100%;
+  background: #395e80;
+  transform-origin: left;
+}
+.public-stage {
+  flex: 1;
+  min-height: calc(100dvh - 160px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 55px 35px 70px;
+  gap: 25px;
+}
+.public-question-screen {
+  width: min(760px, 100%);
+}
+.public-question-heading {
+  display: flex;
+  gap: 17px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+.public-question-heading .question-number {
+  font-size: 14px;
+  min-width: 30px;
+  height: 49px;
+  gap: 6px;
+}
+.public-question-heading h1 {
+  font-size: clamp(29px, 3vw, 39px);
+  line-height: 1.4;
+  letter-spacing: -0.85px;
+  font-weight: 400;
+  overflow-wrap: anywhere;
+}
+.public-required {
+  color: #4c6881;
+  font-size: 0.65em;
+  vertical-align: top;
+}
+.public-question-content {
+  margin-left: 47px;
+}
+.public-description {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #6f766a;
+  margin: -5px 0 35px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.respondent-app .answer-input {
+  color: #395e80;
+  font-size: 29px;
+  padding: 12px 0;
+  border-bottom-color: #9eafbf;
+  line-height: 1.5;
+}
+.respondent-app .answer-input::placeholder {
+  color: #637e95;
+  opacity: 1;
+}
+.respondent-app .answer-input:focus {
+  outline: none;
+  border-bottom: 2px solid #395e80;
+  padding-bottom: 11px;
+}
+.respondent-app .public-textarea {
+  font-size: 26px;
+  resize: none;
+  field-sizing: content;
+  min-height: 130px;
+  max-height: 45dvh;
+}
+.public-choices {
+  margin-top: 31px;
+  gap: 11px;
+}
+.respondent-app .public-choices .answer-choice {
+  min-width: 245px;
+  min-height: 53px;
+  max-width: 100%;
+  font-size: 20px;
+  padding: 11px 15px 11px 11px;
+  border-color: #a6b8c9;
+  border-radius: 5px;
+  background: #f0f4f7;
+  line-height: 1.5;
+}
+.respondent-app .public-choices .answer-choice:hover {
+  background: #e4edf4;
+}
+.respondent-app .public-choices .answer-choice.chosen {
+  border: 2px solid #395e80;
+  padding: 10px 14px 10px 10px;
+  background: #e3ecf4;
+}
+.public-choice-label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.respondent-app .public-choices .choice-key {
+  width: 26px;
+  height: 26px;
+  font-size: 12px;
+  border-color: #8ca3b7;
+}
+.respondent-app .public-choices button[aria-checked="true"] .choice-key {
+  background: #395e80;
+  border-color: #395e80;
+  color: white;
+}
+.respondent-app .public-dropdown {
+  margin-top: 25px;
+  border-bottom-color: #9eafbf;
+}
+.respondent-app .public-dropdown select {
+  min-height: 59px;
+  font-size: 26px;
+  color: #395e80;
+  padding: 10px 36px 12px 0;
+}
+.respondent-app .public-dropdown svg {
+  top: 18px;
+}
+.respondent-app .public-rating {
+  margin-top: 33px;
+  gap: 17px;
+}
+.respondent-app .public-rating button {
+  min-width: 48px;
+  min-height: 69px;
+  gap: 10px;
+  padding: 5px;
+  color: #395e80;
+  border-radius: 7px;
+  font-size: 12px;
+}
+.respondent-app .public-rating button:hover {
+  background: #f0f4f7;
+}
+.respondent-app .public-rating button[aria-checked="true"] {
+  background: #e3ecf4;
+}
+.public-continue {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 31px;
+  flex-wrap: wrap;
+}
+.public-primary {
+  background: #395e80;
+  color: white;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 43px;
+  padding: 10px 18px;
+  border-radius: 5px;
+  font-size: 17px;
+  font-weight: 500;
+  border: 1px solid #395e80;
+  transition: background 0.15s;
+}
+.public-primary:hover:not(:disabled) {
+  background: #2e506f;
+}
+.public-key-hint {
+  font-size: 11px;
+  color: #62766c;
+  line-height: 1.7;
+}
+.public-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  width: fit-content;
+  margin-top: 20px;
+  padding: 9px 12px;
+  border-radius: 5px;
+  background: #f9ece6;
+  color: #8d4833;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.public-error svg,
+.public-submission-error svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.public-submission-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  max-width: 713px;
+  width: 100%;
+  padding: 13px 16px;
+  color: #884a33;
+  background: #fbefe7;
+  border-radius: 5px;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.public-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 76px;
+  gap: 20px;
+  padding: 20px 40px;
+  margin-top: auto;
+}
+.public-brand {
+  font-size: 10px;
+  color: #70756a;
+  white-space: nowrap;
+}
+.public-brand strong {
+  font-weight: 500;
+  color: #3e473c;
+}
+.public-navigation {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.public-navigation > span {
+  font-size: 11px;
+  color: #50654f;
+  min-width: 38px;
+  white-space: nowrap;
+}
+.public-navigation > span > span {
+  color: #78806e;
+  margin: 0 2px;
+}
+.public-navigation > div {
+  display: flex;
+  border-radius: 5px;
+  overflow: hidden;
+  background: #395e80;
+}
+.public-navigation button {
+  width: 39px;
+  height: 37px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+.public-navigation button + button {
+  border-left: 1px solid #ffffff33;
+}
+.public-navigation button:hover:not(:disabled) {
+  background: #2e506f;
+}
+.public-navigation button:focus-visible {
+  outline: 2px solid #dae8f4;
+  outline-offset: -4px;
+}
+.public-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  text-align: center;
+  padding: 80px 25px;
+}
+.public-state h1 {
+  font-size: 31px;
+  font-weight: 400;
+  letter-spacing: -0.7px;
+}
+.public-state p {
+  max-width: 370px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: #707869;
+}
+.public-state-icon {
+  color: #59694e;
+  height: 65px;
+  width: 65px;
+  display: grid;
+  place-items: center;
+  background: #edf0e7;
+  border-radius: 50%;
+  margin-bottom: 5px;
+}
+.thank-you {
+  flex: 1;
+  padding: 80px 25px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.thank-you-mark {
+  width: 87px;
+  height: 87px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #edf1e6;
+  color: #556948;
+  border: 1px solid #d9e2cf;
+  margin-bottom: 34px;
+}
+.public-eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 1.8px;
+  font-size: 10px;
+  color: #707769;
+  margin-bottom: 18px;
+}
+.thank-you h1 {
+  font-weight: 400;
+  font-size: clamp(34px, 4vw, 49px);
+  letter-spacing: -1.5px;
+  line-height: 1.35;
+}
+.thank-you h1:focus {
+  outline: none;
+}
+.thank-you p {
+  color: #707869;
+  font-size: 17px;
+  line-height: 1.9;
+  margin-top: 18px;
+}
+.thank-you-line {
+  width: 43px;
+  border-top: 1px solid #a8b499;
+  margin-top: 42px;
+}
+.public-done {
+  color: #717869;
+  font-size: 11px;
+}
+@media (max-width: 800px) {
+  .public-header {
+    padding: 23px 27px;
+  }
+  .public-stage {
+    padding: 55px 35px 65px;
+  }
+  .public-footer {
+    padding: 20px 27px;
+  }
+  .public-header-hint {
+    display: none;
+  }
+  .public-header > span:first-child {
+    max-width: 100%;
+  }
+}
+@media (max-width: 500px) {
+  .public-header {
+    padding: 20px 23px;
+    min-height: 60px;
+    font-size: 11px;
+  }
+  .public-stage {
+    min-height: calc(100dvh - 140px);
+    padding: 30px 23px 38px;
+  }
+  .public-question-heading {
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .public-question-heading h1 {
+    font-size: 29px;
+    letter-spacing: -0.5px;
+    line-height: 1.35;
+  }
+  .public-question-heading .question-number {
+    min-width: 24px;
+    font-size: 12px;
+    height: 39px;
+  }
+  .public-question-heading .question-number svg {
+    width: 14px;
+  }
+  .public-question-content {
+    margin-left: 34px;
+  }
+  .public-description {
+    font-size: 16px;
+    margin-bottom: 24px;
+  }
+  .respondent-app .answer-input {
+    font-size: 25px;
+    padding-top: 8px;
+  }
+  .respondent-app .public-textarea {
+    font-size: 23px;
+    min-height: 100px;
+  }
+  .respondent-app .public-choices .answer-choice {
+    min-width: 0;
+    width: 100%;
+    font-size: 18px;
+    min-height: 51px;
+  }
+  .respondent-app .public-dropdown select {
+    font-size: 22px;
+  }
+  .respondent-app .public-rating {
+    gap: 5px;
+    justify-content: space-between;
+  }
+  .respondent-app .public-rating button {
+    min-width: 38px;
+    padding: 5px 3px;
+  }
+  .respondent-app .public-rating svg {
+    width: 34px;
+    height: 34px;
+  }
+  .public-continue {
+    gap: 13px;
+    margin-top: 25px;
+  }
+  .public-primary {
+    min-height: 44px;
+    font-size: 16px;
+    padding: 10px 17px;
+  }
+  .public-key-hint {
+    font-size: 10px;
+    max-width: 190px;
+  }
+  .public-footer {
+    min-height: 76px;
+    gap: 10px;
+    padding: 16px 23px;
+  }
+  .public-navigation {
+    gap: 12px;
+  }
+  .public-navigation button {
+    width: 44px;
+    height: 44px;
+  }
+  .public-brand {
+    font-size: 9px;
+  }
+  .public-error {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+  .public-submission-error {
+    font-size: 12px;
+    padding: 12px;
+  }
+  .thank-you {
+    padding: 45px 24px;
+  }
+  .thank-you p {
+    font-size: 15px;
+  }
+  .public-complete .public-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 11px;
+  }
+  .public-done {
+    font-size: 10px;
+  }
+}
+@media (max-height: 600px) {
+  .public-stage {
+    padding-top: 22px;
+    padding-bottom: 28px;
+  }
+  .public-header {
+    min-height: 52px;
+    padding-top: 16px;
+    padding-bottom: 16px;
+  }
+}

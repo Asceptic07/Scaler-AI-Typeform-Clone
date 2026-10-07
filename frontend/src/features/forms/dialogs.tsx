@@ -176,7 +176,7 @@ export function ShareDialog({
         </Button>
       </div>
       <p className="hint">
-        Public form filling will be available in the next phase.
+        Anyone with this link can fill out your form. No login needed.
       </p>
       <div className="modal-actions">
         <Button onClick={onClose}>Done</Button>

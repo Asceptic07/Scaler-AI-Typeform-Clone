@@ -1,8 +1,7 @@
 # Typeform Clone — current development setup
 
-Phase 5 adds the creator dashboard and visual form builder to the existing
-relational database and backend API. Public form filling and results pages will
-be added in later phases.
+Phase 6 adds the public, one-question-at-a-time respondent experience to the
+existing dashboard, builder, and backend. Results pages come in a later phase.
 
 Run these commands in separate terminals from the repository root.
 
@@ -40,6 +39,9 @@ Frontend routes:
 - `/forms/[formId]`: creator builder with all eight question types, inline title
   and help-text editing, option editing, required toggles, persisted pointer and
   keyboard reordering, and desktop/mobile preview.
+- `/to/[slug]`: published public form, accessible without login. Answers remain
+  local while navigating, then submit together to the real backend. Successful
+  persistence displays the thank-you screen.
 
 Frontend features live in `src/features/forms/` and `src/features/builder/`.
 Small shared controls/dialogs live in `src/components/ui/`, domain types in
@@ -51,10 +53,24 @@ Question text saves on blur; toggles, type changes, and option additions/removal
 save immediately. Pending saves are serialized so newer local edits are retained.
 Preview uses the current working definition and never submits answers. Publishing
 requires saved, valid questions and displays a link at `/to/{publicSlug}` using
-the browser origin. That public frontend route is intentionally deferred.
+the browser origin. The public link opens the respondent experience directly.
 Published forms and forms with responses have read-only questions, matching the
 backend policy. The builder offers unpublishing or duplication as appropriate.
 CORS allows browser requests from the configured `FRONTEND_ORIGIN`.
+
+The public feature lives in `src/features/respondent/`, with typed API helpers in
+`src/lib/api/public.ts`. It loads the published definition when the route opens,
+preserves answers when navigating backward, validates before continuing, and
+prevents repeated submission while a request is pending. Server errors retain
+answers; identified validation errors return to the relevant question. Invalid
+or unpublished slugs show the same unavailable state.
+
+Enter continues single-line/choice questions; Up/Down navigate questions outside
+multiline inputs and native selects. Long-text Enter and Shift+Enter insert
+newlines; use OK to continue. Dropdown keys keep their native behavior. Choice
+letters, Y/N, rating digits 1–5, and Left/Right selection are supported. Framer
+Motion transitions respect reduced motion, and a thin progress bar shows the
+current question. Refresh restarts unfinished answers; no localStorage is used.
 
 The backend uses thin `app/routes/` handlers, Pydantic v2 `app/schemas/`, business
 logic in `app/services/`, and typed SQLAlchemy models in `app/models/`.

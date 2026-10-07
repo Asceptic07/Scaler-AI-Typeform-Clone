@@ -4,6 +4,7 @@ export class ApiError extends Error {
   constructor(
     public status: number,
     message: string,
+    public details?: unknown,
   ) {
     super(message);
     this.name = "ApiError";
@@ -33,6 +34,7 @@ export async function request<T>(
     );
   }
   if (!response.ok) {
+    const body = await response.json().catch(() => null);
     const messages: Record<number, string> = {
       400: "Add at least one question before publishing your form.",
       404: "This form or question is no longer available.",
@@ -42,6 +44,7 @@ export async function request<T>(
     throw new ApiError(
       response.status,
       messages[response.status] ?? "That didn’t work. Please try again.",
+      body?.detail,
     );
   }
   if (response.status === 204) return undefined as T;
