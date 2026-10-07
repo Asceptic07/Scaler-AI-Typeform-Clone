@@ -14,6 +14,7 @@ from app.schemas.statistics import FormStatistics
 from app.services import form_service as forms
 from app.services import question_service as questions
 from app.services import response_service as responses
+from app.services.csv_export_service import export_responses
 from app.services.statistics_service import get_statistics
 
 router = APIRouter(prefix="/api/forms", tags=["forms"])
@@ -153,6 +154,24 @@ def delete_question(form_id: int, question_id: int, db: WriteDB) -> Response:
 def list_responses(form_id: int, db: ReadDB) -> list[ResponseDetail]:
     forms.get_form(db, form_id)
     return responses.list_responses(db, form_id)
+
+
+@router.get(
+    "/{form_id}/responses/export.csv",
+    response_class=Response,
+    tags=["results"],
+    summary="Download persisted responses as CSV",
+)
+def export_csv(form_id: int, db: ReadDB) -> Response:
+    form = forms.get_form(db, form_id)
+    return Response(
+        content=export_responses(db, form),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f'attachment; filename="form-{form.id}-responses.csv"',
+            "Cache-Control": "no-store",
+        },
+    )
 
 
 @router.get(

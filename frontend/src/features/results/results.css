@@ -29,6 +29,11 @@
   font-weight: 600;
   margin-bottom: 9px;
 }
+.results-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
 .results-heading h1 {
   font-size: clamp(25px, 3vw, 32px);
   letter-spacing: -0.035em;
@@ -328,6 +333,7 @@
     padding: 28px 16px 48px;
   }
   .results-heading {
+    flex-wrap: wrap;
     gap: 12px;
     margin-bottom: 24px;
   }
