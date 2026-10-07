@@ -65,6 +65,23 @@
 .dashboard-header-actions > button:hover {
   color: var(--text-primary, #262624);
 }
+.dashboard-header-actions > .appearance-toggle {
+  display: inline-flex;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  justify-content: center;
+  border: 1px solid var(--border);
+  color: var(--text-primary, #45433f);
+}
+.dashboard-header-actions > .appearance-toggle:hover {
+  background: var(--surface-hover, #f0f0ed);
+}
+.dashboard-header-actions > .appearance-toggle:focus-visible {
+  outline: 2px solid var(--focus-ring, #425f85);
+  outline-offset: 3px;
+}
 .dashboard-header-actions > .avatar {
   background: var(--peach-surface, #e9dfca);
   color: var(--text-primary, #564b39);
@@ -466,7 +483,7 @@
   .dashboard-header-actions {
     gap: 10px;
   }
-  .dashboard-header-actions > button:nth-child(-n + 2) {
+  .dashboard-header-actions > .dashboard-secondary-action {
     display: none;
   }
   .dashboard-account {

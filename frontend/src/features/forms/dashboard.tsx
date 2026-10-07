@@ -192,11 +192,17 @@ export function Dashboard() {
           className="dashboard-header-actions"
           aria-label="Account navigation"
         >
-          <button onClick={() => setPlaceholder("Integrations")}>
+          <button
+            className="dashboard-secondary-action"
+            onClick={() => setPlaceholder("Integrations")}
+          >
             <Blocks size={16} aria-hidden="true" />
             Integrations
           </button>
-          <button onClick={() => setPlaceholder("Brand kit")}>
+          <button
+            className="dashboard-secondary-action"
+            onClick={() => setPlaceholder("Brand kit")}
+          >
             <BriefcaseBusiness size={16} aria-hidden="true" />
             Brand kit
           </button>

@@ -21,7 +21,7 @@ export function AppearanceToggle() {
     <button
       type="button"
       className="icon-button appearance-toggle"
-      aria-label="Dark mode"
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
       aria-pressed={dark}
       title={dark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={() => {
@@ -35,9 +35,9 @@ export function AppearanceToggle() {
       }}
     >
       {dark ? (
-        <Moon size={17} aria-hidden="true" />
-      ) : (
         <Sun size={17} aria-hidden="true" />
+      ) : (
+        <Moon size={17} aria-hidden="true" />
       )}
     </button>
   );
