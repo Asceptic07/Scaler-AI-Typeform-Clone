@@ -1,7 +1,8 @@
 # Typeform Clone — current development setup
 
-Phase 4 provides the relational database and backend API. The frontend still
-contains only the temporary connectivity page; the final UI comes later.
+Phase 5 adds the creator dashboard and visual form builder to the existing
+relational database and backend API. Public form filling and results pages will
+be added in later phases.
 
 Run these commands in separate terminals from the repository root.
 
@@ -32,9 +33,28 @@ Local defaults work without environment files. For overrides, copy
 `frontend/.env.local`. Restart the relevant server after changes. Public frontend
 variables are bundled at build time, so production changes require rebuilding.
 
-The temporary page fetches backend health on the server for every request and
-shows Connected or Unavailable. Refresh after starting or stopping the backend.
-CORS allows the configured `FRONTEND_ORIGIN` for future browser requests.
+Frontend routes:
+
+- `/`: workspace dashboard with real forms, search, grid/list views, create,
+  rename, duplicate, publish/unpublish, deletion confirmation, and share links.
+- `/forms/[formId]`: creator builder with all eight question types, inline title
+  and help-text editing, option editing, required toggles, persisted pointer and
+  keyboard reordering, and desktop/mobile preview.
+
+Frontend features live in `src/features/forms/` and `src/features/builder/`.
+Small shared controls/dialogs live in `src/components/ui/`, domain types in
+`src/types/form.ts`, and native-fetch API functions in `src/lib/api/`. Pages and
+the root layout remain Server Components; interactive features use scoped Client
+Components and React state. Sonner provides toast feedback.
+
+Question text saves on blur; toggles, type changes, and option additions/removals
+save immediately. Pending saves are serialized so newer local edits are retained.
+Preview uses the current working definition and never submits answers. Publishing
+requires saved, valid questions and displays a link at `/to/{publicSlug}` using
+the browser origin. That public frontend route is intentionally deferred.
+Published forms and forms with responses have read-only questions, matching the
+backend policy. The builder offers unpublishing or duplication as appropriate.
+CORS allows browser requests from the configured `FRONTEND_ORIGIN`.
 
 The backend uses thin `app/routes/` handlers, Pydantic v2 `app/schemas/`, business
 logic in `app/services/`, and typed SQLAlchemy models in `app/models/`.
